@@ -277,6 +277,7 @@ namespace ff{
 		cond_t *continue_read_thread;
 
 		ShowMode show_mode;
+		Surface *screen;
 	};
 
 	/*

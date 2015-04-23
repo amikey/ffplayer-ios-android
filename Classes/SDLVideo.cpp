@@ -51,6 +51,9 @@ namespace ff{
 		return SDL_MapRGB((SDL_PixelFormat*)format, r, g, b);
 	}
 
+	/*
+		分配一个主显示Surface,这里分配一块内存代替
+	*/
 	Surface * SetVideoMode(int width, int height, int bpp, Uint32 flags)
 	{
 		return (Surface*)SDL_SetVideoMode(width, height, bpp, flags);

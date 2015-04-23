@@ -56,7 +56,6 @@ int64_t audio_callback_time;
 
 AVPacket flush_pkt;
 
-Surface *screen;
 SwsContext *sws_opts;
 AVDictionary *swr_opts;
 AVDictionary *format_opts, *codec_opts, *resample_opts;
@@ -173,11 +172,11 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 		h = default_height;
 	}
 	w = FFMIN(16383, w);
-	if (screen && is->width == screen->w && screen->w == w
-		&& is->height == screen->h && screen->h == h && !force_set_video_mode)
+	if (is->screen && is->width == is->screen->w && is->screen->w == w
+		&& is->height == is->screen->h && is->screen->h == h && !force_set_video_mode)
 		return 0;
-	screen = SetVideoMode(w, h, 0, flags);
-	if (!screen) {
+	is->screen = SetVideoMode(w, h, 0, flags);
+	if (!is->screen) {
 		av_log(NULL, AV_LOG_FATAL, "SDL: could not set video mode - exiting\n");
 		do_exit(is);
 	}
@@ -186,8 +185,8 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 	
 	WM_SetCaption(window_title, window_title);
 
-	is->width = screen->w;
-	is->height = screen->h;
+	is->width = is->screen->w;
+	is->height = is->screen->h;
 
 	return 0;
 }
@@ -212,7 +211,7 @@ static inline void fill_rectangle(Surface *screen,
 }
 
 /* draw only the border of a rectangle */
-static void fill_border(int xleft, int ytop, int width, int height, int x, int y, int w, int h, int color, int update)
+static void fill_border(Surface* screen, int xleft, int ytop, int width, int height, int x, int y, int w, int h, int color, int update)
 {
 	int w1, w2, h1, h2;
 
@@ -620,8 +619,8 @@ static void video_image_display(VideoState *is)
 		DisplayYUVOverlay(vp->bmp, &rect);
 
 		if (rect.x != is->last_display_rect.x || rect.y != is->last_display_rect.y || rect.w != is->last_display_rect.w || rect.h != is->last_display_rect.h || is->force_refresh) {
-			int bgcolor = MapRGB(screen->format, 0x00, 0x00, 0x00);
-			fill_border(is->xleft, is->ytop, is->width, is->height, rect.x, rect.y, rect.w, rect.h, bgcolor, 1);
+			int bgcolor = MapRGB(is->screen->format, 0x00, 0x00, 0x00);
+			fill_border(is->screen,is->xleft, is->ytop, is->width, is->height, rect.x, rect.y, rect.w, rect.h, bgcolor, 1);
 			is->last_display_rect = rect;
 		}
 	}
@@ -681,13 +680,13 @@ static void video_audio_display(VideoState *s)
 		i_start = s->last_i_start;
 	}
 
-	bgcolor = MapRGB(screen->format, 0x00, 0x00, 0x00);
+	bgcolor = MapRGB(s->screen->format, 0x00, 0x00, 0x00);
 	if (s->show_mode == SHOW_MODE_WAVES) {
-		fill_rectangle(screen,
+		fill_rectangle(s->screen,
 			s->xleft, s->ytop, s->width, s->height,
 			bgcolor, 0);
 
-		fgcolor = MapRGB(screen->format, 0xff, 0xff, 0xff);
+		fgcolor = MapRGB(s->screen->format, 0xff, 0xff, 0xff);
 
 		/* total height for one channel */
 		h = s->height / nb_display_channels;
@@ -705,7 +704,7 @@ static void video_audio_display(VideoState *s)
 				else {
 					ys = y1;
 				}
-				fill_rectangle(screen,
+				fill_rectangle(s->screen,
 					s->xleft + x, ys, 1, y,
 					fgcolor, 0);
 				i += channels;
@@ -714,15 +713,15 @@ static void video_audio_display(VideoState *s)
 			}
 		}
 
-		fgcolor = MapRGB(screen->format, 0x00, 0x00, 0xff);
+		fgcolor = MapRGB(s->screen->format, 0x00, 0x00, 0xff);
 
 		for (ch = 1; ch < nb_display_channels; ch++) {
 			y = s->ytop + ch * h;
-			fill_rectangle(screen,
+			fill_rectangle(s->screen,
 				s->xleft, y, s->width, 1,
 				fgcolor, 0);
 		}
-		UpdateRect(screen, s->xleft, s->ytop, s->width, s->height);
+		UpdateRect(s->screen, s->xleft, s->ytop, s->width, s->height);
 	}
 	else {
 		nb_display_channels = FFMIN(nb_display_channels, 2);
@@ -760,14 +759,14 @@ static void video_audio_display(VideoState *s)
 					+ data[1][2 * y + 1] * data[1][2 * y + 1])) : a;
 				a = FFMIN(a, 255);
 				b = FFMIN(b, 255);
-				fgcolor = MapRGB(screen->format, a, b, (a + b) / 2);
+				fgcolor = MapRGB(s->screen->format, a, b, (a + b) / 2);
 
-				fill_rectangle(screen,
+				fill_rectangle(s->screen,
 					s->xpos, s->height - y, 1, 1,
 					fgcolor, 0);
 			}
 		}
-		UpdateRect(screen, s->xpos, s->ytop, 1, s->height);
+		UpdateRect(s->screen, s->xpos, s->ytop, 1, s->height);
 		if (!s->paused)
 			s->xpos++;
 		if (s->xpos >= s->width)
@@ -778,7 +777,7 @@ static void video_audio_display(VideoState *s)
 /* display the current picture, if any */
 static void video_display(VideoState *is)
 {
-	if (!screen)
+	if (!is->screen)
 		video_open(is, 0, NULL);
 	if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
 		video_audio_display(is);
@@ -1732,7 +1731,7 @@ static void alloc_picture(VideoState *is)
 
 	vp->bmp = CreateYUVOverlay(vp->width, vp->height,
 		YV12_OVERLAY,
-		screen);
+		is->screen);
 	bufferdiff = vp->bmp ? FFMAX(vp->bmp->pixels[0], vp->bmp->pixels[1]) - FFMIN(vp->bmp->pixels[0], vp->bmp->pixels[1]) : 0;
 	if (!vp->bmp || vp->bmp->pitches[0] < vp->width || bufferdiff < (int64_t)vp->height * vp->bmp->pitches[0]) {
 		/* SDL allocates a buffer smaller than requested if the video
@@ -3229,13 +3228,13 @@ the_end:
 
 void toggle_audio_display(VideoState *is)
 {
-	int bgcolor = MapRGB(screen->format, 0x00, 0x00, 0x00);
+	int bgcolor = MapRGB(is->screen->format, 0x00, 0x00, 0x00);
 	int next = is->show_mode;
 	do {
 		next = (next + 1) % SHOW_MODE_NB;
 	} while (next != is->show_mode && (next == SHOW_MODE_VIDEO && !is->video_st || next != SHOW_MODE_VIDEO && !is->audio_st));
 	if (is->show_mode != next) {
-		fill_rectangle(screen,
+		fill_rectangle(is->screen,
 			is->xleft, is->ytop, is->width, is->height,
 			bgcolor, 1);
 		is->force_refresh = 1;
