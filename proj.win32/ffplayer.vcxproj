@@ -129,6 +129,7 @@
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\CCFFmpegNode.cpp" />
     <ClCompile Include="..\Classes\ff.cpp" />
+    <ClCompile Include="..\Classes\FFVideo.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="..\Classes\SDLAudio.cpp" />
     <ClCompile Include="..\Classes\SDLEvent.cpp" />

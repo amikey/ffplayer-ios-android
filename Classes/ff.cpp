@@ -1,4 +1,5 @@
 #include "ffdepends.h"
+#include "ff.h"
 
 namespace ff{
 

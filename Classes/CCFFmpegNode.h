@@ -1,6 +1,6 @@
 #ifndef  __CCFFMPEGMPDE_H__
 #define  __CCFFMPEGMPDE_H__
-
+#include "ff.h"
 #include "cocos2d.h"
 #include <thread>
 
@@ -23,6 +23,7 @@ protected:
 	int _buffer_height;
 	bool _isrun;
 	std::thread *_pthread;
+	FFVideo _video;
 	void updateBuffer();
 	void updateTexture(float dt);
 };

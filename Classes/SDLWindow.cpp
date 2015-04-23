@@ -6,26 +6,27 @@ extern "C" {
 #if __cplusplus
 }
 #endif
+namespace ff{
+	char *my_getenv(const char *name)
+	{
+		return SDL_getenv(name);
+	}
 
-char *my_getenv(const char *name)
-{
-	return SDL_getenv(name);
-}
+	void WM_SetCaption(const char *title, const char *icon)
+	{
+	}
 
-void WM_SetCaption(const char *title, const char *icon)
-{
-}
+	int ShowCursor(int toggle)
+	{
+		return 0;
+	}
 
-int ShowCursor(int toggle)
-{
-	return 0;
-}
+	void Quit(void)
+	{
+	}
 
-void Quit(void)
-{
-}
-
-char *GetError(void)
-{
-	return "";
+	char *GetError(void)
+	{
+		return "";
+	}
 }

@@ -72,6 +72,8 @@ bool CCFFmpegNode::initWithURL(const std::string& url)
 	_pthread = new std::thread(&CCFFmpegNode::updateBuffer,this);
 	_isrun = true;
 	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/60, false);
+	
+	_video.open("1.m3u8");
 	return true;
 }
 
