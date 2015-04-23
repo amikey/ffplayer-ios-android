@@ -3,8 +3,14 @@
 
 using namespace ff;
 
+static bool isInitFF = false;
+
 FFVideo::FFVideo() :_ctx(nullptr)
 {
+	if (!isInitFF){
+		initFF();
+		isInitFF = true;
+	}
 }
 
 FFVideo::~FFVideo()
