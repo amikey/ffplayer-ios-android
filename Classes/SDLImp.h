@@ -58,6 +58,27 @@ namespace ff{
 #define YUY2_OVERLAY  0x32595559	/**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
 #define UYVY_OVERLAY  0x59565955	/**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
 #define YVYU_OVERLAY  0x55595659	/**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+	/* RGB conversion lookup tables */
+	struct Surface;
+	struct private_yuvhwdata {
+		Surface *stretch;
+		Surface *display;
+		Uint8 *pixels;
+		int *colortab;
+		Uint32 *rgb_2_pix;
+		void(*Display1X)(int *colortab, Uint32 *rgb_2_pix,
+			unsigned char *lum, unsigned char *cr,
+			unsigned char *cb, unsigned char *out,
+			int rows, int cols, int mod);
+		void(*Display2X)(int *colortab, Uint32 *rgb_2_pix,
+			unsigned char *lum, unsigned char *cr,
+			unsigned char *cb, unsigned char *out,
+			int rows, int cols, int mod);
+
+		/* These are just so we don't have to allocate them separately */
+		Uint16 pitches[3];
+		Uint8 *planes[3];
+	};
 
 	struct Overlay {
 		Uint32 format;				/**< Read-only */
