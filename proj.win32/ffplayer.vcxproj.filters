@@ -26,9 +26,6 @@
     <ClCompile Include="..\Classes\ff.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\main.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\SDLAudio.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
@@ -63,6 +60,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\SDLImp.h">
       <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ffdepends.h">
+      <Filter>win32</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
