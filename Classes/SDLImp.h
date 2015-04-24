@@ -46,7 +46,7 @@ namespace ff{
 	/*
 		从SDL_video.h复制而来
 		*/
-#define SDL_SWSURFACE	0x00000000	/**< Surface is in system memory */
+#define SWSURFACE	0x00000000	/**< Surface is in system memory */
 #define HWSURFACE	0x00000001	/**< Surface is in video memory */
 #define ASYNCBLIT	0x00000004	/**< Use asynchronous blits if possible */
 #define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
@@ -58,8 +58,33 @@ namespace ff{
 #define YUY2_OVERLAY  0x32595559	/**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
 #define UYVY_OVERLAY  0x59565955	/**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
 #define YVYU_OVERLAY  0x55595659	/**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+
+#define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
+#define SRCCOLORKEY	0x00001000	/**< Blit uses a source color key */
+#define RLEACCELOK	0x00002000	/**< Private flag */
+#define RLEACCEL	0x00004000	/**< Surface is RLE encoded */
+#define SRCALPHA	0x00010000	/**< Blit uses source alpha blending */
+#define PREALLOC	0x01000000	/**< Surface uses preallocated memory */
+
+#define ALPHA_OPAQUE 255
+#define ALPHA_TRANSPARENT 0
+
 	/* RGB conversion lookup tables */
 	struct Surface;
+	struct Overlay;
+
+	struct Palette {
+		int       ncolors;
+		SDL_Color *colors;
+	};
+
+	struct private_yuvhwfuncs {
+		int(*Lock)(Overlay *overlay);
+		void(*Unlock)(Overlay *overlay);
+		int(*Display)(Overlay *overlay, Rect *src, Rect *dst);
+		void(*FreeHW)(Overlay *overlay);
+	};
+
 	struct private_yuvhwdata {
 		Surface *stretch;
 		Surface *display;
@@ -136,6 +161,42 @@ namespace ff{
 		Uint8  alpha;
 	};
 
+	struct BlitInfo{
+		Uint8 *s_pixels;
+		int s_width;
+		int s_height;
+		int s_skip;
+		Uint8 *d_pixels;
+		int d_width;
+		int d_height;
+		int d_skip;
+		void *aux_data;
+		PixelFormat *src;
+		Uint8 *table;
+		PixelFormat *dst;
+	};
+	typedef void(*loblit)(BlitInfo *info);
+	/* This is the private info structure for software accelerated blits */
+	struct private_swaccel {
+		loblit blit;
+		void *aux_data;
+	};
+
+	/* Blit mapping definition */
+	struct BlitMap {
+		Surface *dst;
+		int identity;
+		Uint8 *table;
+		SDL_blit hw_blit;
+		SDL_blit sw_blit;
+		struct private_hwaccel *hw_data;
+		struct private_swaccel *sw_data;
+
+		/* the version count matches the destination; mismatch indicates
+		an invalid mapping */
+		unsigned int format_version;
+	};
+
 	struct Surface {
 		Uint32 flags;				/**< Read-only */
 		PixelFormat *format;		/**< Read-only */
@@ -155,7 +216,7 @@ namespace ff{
 		Uint32 locked;				/**< Private */
 
 		/** info for fast blit mapping to other surfaces */
-		struct SDL_BlitMap *map;		/**< Private */
+		struct BlitMap *map;		/**< Private */
 
 		/** format version, bumped at every change to invalidate blit maps */
 		unsigned int format_version;		/**< Private */
@@ -163,6 +224,8 @@ namespace ff{
 		/** Reference count -- used when freeing surface */
 		int refcount;				/**< Read-mostly */
 	};
+
+	void SDLog(const char *log);
 
 	/*
 		SDL Video替代函数
@@ -173,9 +236,17 @@ namespace ff{
 	void FreeYUVOverlay(Overlay *overlay);
 	Overlay * CreateYUVOverlay(int width, int height,
 		Uint32 format, Surface *display);
-	Surface *CreateRGBSurface(int width, int height);
-	int BlitSurface(Surface *src, Rect *srcrect, Surface *dst, Rect *dstrect);
-	Surface * SetVideoMode(int width, int height, int bpp, Uint32 flags);
+
+	Surface * CreateRGBSurface(Uint32 flags,
+		int width, int height, int depth,
+		Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
+	void FreeSurface(Surface *);
+	int LockSurface(Surface *);
+	void UnlockSurface(Surface *);
+	int SoftStretch(Surface *src, Rect *srcrect,
+		Surface *dst, Rect *dstrect);
+	void UpdateRects
+		(Surface *screen, int numrects, Rect *rects);
 	/*
 		SDL 辅助函数
 		*/

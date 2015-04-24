@@ -158,6 +158,7 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 
 	w = FFMIN(16383, w);
 
+	SetVideoMode(w, h, 0, HWSURFACE | ASYNCBLIT | HWACCEL);
 	if (!is->pscreen)
 		is->pscreen = CreateRGBSurface(w,h);
 	if (!is->pscreen) {
