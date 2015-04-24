@@ -820,10 +820,10 @@ namespace ff{
 	}
 	/* The functions used to manipulate software video overlays */
 	static struct private_yuvhwfuncs sw_yuvfuncs = {
-		SDL_LockYUV_SW,
-		SDL_UnlockYUV_SW,
-		SDL_DisplayYUV_SW,
-		SDL_FreeYUV_SW
+		LockYUV_SW,
+		UnlockYUV_SW,
+		DisplayYUV_SW,
+		FreeYUV_SW
 	};
 
 	/*

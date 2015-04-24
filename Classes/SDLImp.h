@@ -138,11 +138,6 @@ namespace ff{
 		Uint8 unused;
 	};
 
-	struct Palette {
-		int       ncolors;
-		Color *colors;
-	};
-
 	/** Everything in the pixel format structure is read-only */
 	struct PixelFormat {
 		Palette *palette;
@@ -252,12 +247,6 @@ namespace ff{
 		int width, int height, int depth,
 		Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 	void FreeSurface(Surface *);
-	int LockSurface(Surface *);
-	void UnlockSurface(Surface *);
-	int SoftStretch(Surface *src, Rect *srcrect,
-		Surface *dst, Rect *dstrect);
-	void UpdateRects
-		(Surface *screen, int numrects, Rect *rects);
 	/*
 		SDL ¸¨Öúº¯Êý
 		*/

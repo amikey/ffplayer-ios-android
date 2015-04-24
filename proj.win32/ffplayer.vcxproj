@@ -133,6 +133,8 @@
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="..\Classes\SDLAudio.cpp" />
     <ClCompile Include="..\Classes\SDLEvent.cpp" />
+    <ClCompile Include="..\Classes\SDLOverlay.cpp" />
+    <ClCompile Include="..\Classes\SDLSurface.cpp" />
     <ClCompile Include="..\Classes\SDLThread.cpp" />
     <ClCompile Include="..\Classes\SDLVideo.cpp" />
     <ClCompile Include="..\Classes\SDLWindow.cpp" />
