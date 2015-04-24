@@ -167,17 +167,15 @@ namespace ff{
 	/*
 		SDL VideoÌæ´úº¯Êý
 		*/
-	int FillRect(Surface *dst, Rect *dstrect, Uint32 color);
 	int LockYUVOverlay(Overlay *overlay);
 	void UnlockYUVOverlay(Overlay *overlay);
 	int DisplayYUVOverlay(Overlay *overlay, Rect *dstrect);
 	void FreeYUVOverlay(Overlay *overlay);
 	Overlay * CreateYUVOverlay(int width, int height,
 		Uint32 format, Surface *display);
-	void UpdateRect(Surface *screen, Sint32 x, Sint32 y, Uint32 w, Uint32 h);
-	Uint32 MapRGB(const PixelFormat * const format, const Uint8 r, const Uint8 g, const Uint8 b);
+	Surface *CreateRGBSurface(int width, int height);
+	int BlitSurface(Surface *src, Rect *srcrect, Surface *dst, Rect *dstrect);
 	Surface * SetVideoMode(int width, int height, int bpp, Uint32 flags);
-
 	/*
 		SDL ¸¨Öúº¯Êý
 		*/

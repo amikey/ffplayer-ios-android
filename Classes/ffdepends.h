@@ -277,7 +277,10 @@ namespace ff{
 		cond_t *continue_read_thread;
 
 		ShowMode show_mode;
-		Surface *screen;
+		/*
+		一个RGB缓冲区
+		*/
+		Surface *pscreen;
 	};
 
 	/*
@@ -292,6 +295,8 @@ namespace ff{
 	void stream_toggle_pause(VideoState *is); //转换播放和暂停
 	void toggle_pause(VideoState *is); //同上
 	int is_stream_pause(VideoState *is); //判断视频是否被暂停了
+
+	void video_refresh(VideoState *is, double *remaining_time);
 	/*
 	跳到指定位置播放
 	*/

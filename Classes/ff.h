@@ -15,6 +15,10 @@ public:
 	void pause();
 	void play();
 	void close();
+	int width() const;
+	int height() const;
+	int length() const; //时间长度ms
+	void *image() const;
 private:
 	void* _ctx;
 };

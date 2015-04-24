@@ -64,8 +64,11 @@
     <ClInclude Include="..\Classes\SDLImp.h">
       <Filter>Classes</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\ff.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\ffdepends.h">
-      <Filter>win32</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

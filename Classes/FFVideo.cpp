@@ -46,7 +46,42 @@ bool FFVideo::isPlaying() const
 
 bool FFVideo::isOpen() const
 {
-	return _ctx != nullptr;
+	VideoState* _vs = (VideoState*)_ctx;
+	return  (_vs && (_vs->audio_st || _vs->video_st));
+}
+
+int FFVideo::width() const
+{
+	if (!isOpen())return -1;
+	VideoState* _vs = (VideoState*)_ctx;
+	if (!_vs->video_st->codec)return -1;
+	return _vs->video_st->codec->width;
+}
+
+int FFVideo::height() const
+{
+	if (!isOpen())return -1;
+	VideoState* _vs = (VideoState*)_ctx;
+	if (!_vs->video_st->codec)return -1;
+	return _vs->video_st->codec->height;
+}
+
+void *FFVideo::image() const
+{
+	VideoState* _vs = (VideoState*)_ctx;
+	if (_vs && _vs->pscreen)
+	{
+		double r = 1 / 30;
+		video_refresh(_vs, &r);
+		return _vs->pscreen->pixels;
+	}
+	return nullptr;
+}
+
+int FFVideo::length() const
+{
+	if (!isOpen())return -1;
+	return 0;//not impentment
 }
 
 void FFVideo::pause()

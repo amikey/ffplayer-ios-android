@@ -18,13 +18,9 @@ public:
 protected:
 	Sprite *_view;
 	Texture2D *_texture;
-	void *_buffer;
-	int _buffer_width;
-	int _buffer_height;
-	bool _isrun;
-	std::thread *_pthread;
+	int _width;
+	int _height;
 	FFVideo _video;
-	void updateBuffer();
 	void updateTexture(float dt);
 };
 

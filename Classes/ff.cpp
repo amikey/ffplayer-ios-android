@@ -51,7 +51,6 @@ char *afilters = NULL;
 int autorotate = 1;
 
 /* current context */
-int is_full_screen;
 int64_t audio_callback_time;
 
 AVPacket flush_pkt;
@@ -147,46 +146,32 @@ static void set_default_window_size(int width, int height, AVRational sar)
 	default_height = rect.h;
 }
 
-
 static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 {
-	int flags = HWSURFACE | ASYNCBLIT | HWACCEL;
 	int w, h;
-
-	if (is_full_screen) flags |= FULLSCREEN;
-	else                flags |= RESIZABLE;
 
 	if (vp && vp->width)
 		set_default_window_size(vp->width, vp->height, vp->sar);
 
-	if (is_full_screen && fs_screen_width) {
-		w = fs_screen_width;
-		h = fs_screen_height;
-	}
-	else if (!is_full_screen && screen_width) {
-		w = screen_width;
-		h = screen_height;
-	}
-	else {
-		w = default_width;
-		h = default_height;
-	}
+	w = default_width;
+	h = default_height;
+
 	w = FFMIN(16383, w);
-	if (is->screen && is->width == is->screen->w && is->screen->w == w
-		&& is->height == is->screen->h && is->screen->h == h && !force_set_video_mode)
-		return 0;
-	is->screen = SetVideoMode(w, h, 0, flags);
-	if (!is->screen) {
+
+	if (!is->pscreen)
+		is->pscreen = CreateRGBSurface(w,h);
+	if (!is->pscreen) {
 		av_log(NULL, AV_LOG_FATAL, "SDL: could not set video mode - exiting\n");
 		do_exit(is);
 	}
+
 	if (!window_title)
 		window_title = input_filename;
 	
 	WM_SetCaption(window_title, window_title);
 
-	is->width = is->screen->w;
-	is->height = is->screen->h;
+	is->width = is->pscreen->w;
+	is->height = is->pscreen->h;
 
 	return 0;
 }
@@ -195,55 +180,6 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 static inline int compute_mod(int a, int b)
 {
 	return a < 0 ? a%b + b : a%b;
-}
-
-static inline void fill_rectangle(Surface *screen,
-	int x, int y, int w, int h, int color, int update)
-{
-	Rect rect;
-	rect.x = x;
-	rect.y = y;
-	rect.w = w;
-	rect.h = h;
-	FillRect(screen, &rect, color);
-	if (update && w > 0 && h > 0)
-		UpdateRect(screen, x, y, w, h);
-}
-
-/* draw only the border of a rectangle */
-static void fill_border(Surface* screen, int xleft, int ytop, int width, int height, int x, int y, int w, int h, int color, int update)
-{
-	int w1, w2, h1, h2;
-
-	/* fill the background */
-	w1 = x;
-	if (w1 < 0)
-		w1 = 0;
-	w2 = width - (x + w);
-	if (w2 < 0)
-		w2 = 0;
-	h1 = y;
-	if (h1 < 0)
-		h1 = 0;
-	h2 = height - (y + h);
-	if (h2 < 0)
-		h2 = 0;
-	fill_rectangle(screen,
-		xleft, ytop,
-		w1, height,
-		color, update);
-	fill_rectangle(screen,
-		xleft + width - w2, ytop,
-		w2, height,
-		color, update);
-	fill_rectangle(screen,
-		xleft + w1, ytop,
-		width - w1 - w2, h1,
-		color, update);
-	fill_rectangle(screen,
-		xleft + w1, ytop + height - h2,
-		width - w1 - w2, h2,
-		color, update);
 }
 
 #define ALPHA_BLEND(a, oldp, newp, s)\
@@ -617,172 +553,16 @@ static void video_image_display(VideoState *is)
 		calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
 
 		DisplayYUVOverlay(vp->bmp, &rect);
-
-		if (rect.x != is->last_display_rect.x || rect.y != is->last_display_rect.y || rect.w != is->last_display_rect.w || rect.h != is->last_display_rect.h || is->force_refresh) {
-			int bgcolor = MapRGB(is->screen->format, 0x00, 0x00, 0x00);
-			fill_border(is->screen,is->xleft, is->ytop, is->width, is->height, rect.x, rect.y, rect.w, rect.h, bgcolor, 1);
-			is->last_display_rect = rect;
-		}
-	}
-}
-
-static void video_audio_display(VideoState *s)
-{
-	int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
-	int ch, channels, h, h2, bgcolor, fgcolor;
-	int64_t time_diff;
-	int rdft_bits, nb_freq;
-
-	for (rdft_bits = 1; (1 << rdft_bits) < 2 * s->height; rdft_bits++)
-		;
-	nb_freq = 1 << (rdft_bits - 1);
-
-	/* compute display index : center on currently output samples */
-	channels = s->audio_tgt.channels;
-	nb_display_channels = channels;
-	if (!s->paused) {
-		int data_used = s->show_mode == SHOW_MODE_WAVES ? s->width : (2 * nb_freq);
-		n = 2 * channels;
-		delay = s->audio_write_buf_size;
-		delay /= n;
-
-		/* to be more precise, we take into account the time spent since
-		the last buffer computation */
-		if (audio_callback_time) {
-			time_diff = av_gettime_relative() - audio_callback_time;
-			delay -= (time_diff * s->audio_tgt.freq) / 1000000;
-		}
-
-		delay += 2 * data_used;
-		if (delay < data_used)
-			delay = data_used;
-
-		i_start = x = compute_mod(s->sample_array_index - delay * channels, SAMPLE_ARRAY_SIZE);
-		if (s->show_mode == SHOW_MODE_WAVES) {
-			h = INT_MIN;
-			for (i = 0; i < 1000; i += channels) {
-				int idx = (SAMPLE_ARRAY_SIZE + x - i) % SAMPLE_ARRAY_SIZE;
-				int a = s->sample_array[idx];
-				int b = s->sample_array[(idx + 4 * channels) % SAMPLE_ARRAY_SIZE];
-				int c = s->sample_array[(idx + 5 * channels) % SAMPLE_ARRAY_SIZE];
-				int d = s->sample_array[(idx + 9 * channels) % SAMPLE_ARRAY_SIZE];
-				int score = a - d;
-				if (h < score && (b ^ c) < 0) {
-					h = score;
-					i_start = idx;
-				}
-			}
-		}
-
-		s->last_i_start = i_start;
-	}
-	else {
-		i_start = s->last_i_start;
-	}
-
-	bgcolor = MapRGB(s->screen->format, 0x00, 0x00, 0x00);
-	if (s->show_mode == SHOW_MODE_WAVES) {
-		fill_rectangle(s->screen,
-			s->xleft, s->ytop, s->width, s->height,
-			bgcolor, 0);
-
-		fgcolor = MapRGB(s->screen->format, 0xff, 0xff, 0xff);
-
-		/* total height for one channel */
-		h = s->height / nb_display_channels;
-		/* graph height / 2 */
-		h2 = (h * 9) / 20;
-		for (ch = 0; ch < nb_display_channels; ch++) {
-			i = i_start + ch;
-			y1 = s->ytop + ch * h + (h / 2); /* position of center line */
-			for (x = 0; x < s->width; x++) {
-				y = (s->sample_array[i] * h2) >> 15;
-				if (y < 0) {
-					y = -y;
-					ys = y1 - y;
-				}
-				else {
-					ys = y1;
-				}
-				fill_rectangle(s->screen,
-					s->xleft + x, ys, 1, y,
-					fgcolor, 0);
-				i += channels;
-				if (i >= SAMPLE_ARRAY_SIZE)
-					i -= SAMPLE_ARRAY_SIZE;
-			}
-		}
-
-		fgcolor = MapRGB(s->screen->format, 0x00, 0x00, 0xff);
-
-		for (ch = 1; ch < nb_display_channels; ch++) {
-			y = s->ytop + ch * h;
-			fill_rectangle(s->screen,
-				s->xleft, y, s->width, 1,
-				fgcolor, 0);
-		}
-		UpdateRect(s->screen, s->xleft, s->ytop, s->width, s->height);
-	}
-	else {
-		nb_display_channels = FFMIN(nb_display_channels, 2);
-		if (rdft_bits != s->rdft_bits) {
-			av_rdft_end(s->rdft);
-			av_free(s->rdft_data);
-			s->rdft = av_rdft_init(rdft_bits, DFT_R2C);
-			s->rdft_bits = rdft_bits;
-			s->rdft_data = (FFTSample*)av_malloc_array(nb_freq, 4 * sizeof(*s->rdft_data));
-		}
-		if (!s->rdft || !s->rdft_data){
-			av_log(NULL, AV_LOG_ERROR, "Failed to allocate buffers for RDFT, switching to waves display\n");
-			s->show_mode = SHOW_MODE_WAVES;
-		}
-		else {
-			FFTSample *data[2];
-			for (ch = 0; ch < nb_display_channels; ch++) {
-				data[ch] = s->rdft_data + 2 * nb_freq * ch;
-				i = i_start + ch;
-				for (x = 0; x < 2 * nb_freq; x++) {
-					double w = (x - nb_freq) * (1.0 / nb_freq);
-					data[ch][x] = s->sample_array[i] * (1.0 - w * w);
-					i += channels;
-					if (i >= SAMPLE_ARRAY_SIZE)
-						i -= SAMPLE_ARRAY_SIZE;
-				}
-				av_rdft_calc(s->rdft, data[ch]);
-			}
-			/* Least efficient way to do this, we should of course
-			* directly access it but it is more than fast enough. */
-			for (y = 0; y < s->height; y++) {
-				double w = 1 / sqrt((float)nb_freq);
-				int a = sqrt(w * sqrt(data[0][2 * y + 0] * data[0][2 * y + 0] + data[0][2 * y + 1] * data[0][2 * y + 1]));
-				int b = (nb_display_channels == 2) ? sqrt(w * sqrt(data[1][2 * y + 0] * data[1][2 * y + 0]
-					+ data[1][2 * y + 1] * data[1][2 * y + 1])) : a;
-				a = FFMIN(a, 255);
-				b = FFMIN(b, 255);
-				fgcolor = MapRGB(s->screen->format, a, b, (a + b) / 2);
-
-				fill_rectangle(s->screen,
-					s->xpos, s->height - y, 1, 1,
-					fgcolor, 0);
-			}
-		}
-		UpdateRect(s->screen, s->xpos, s->ytop, 1, s->height);
-		if (!s->paused)
-			s->xpos++;
-		if (s->xpos >= s->width)
-			s->xpos = s->xleft;
 	}
 }
 
 /* display the current picture, if any */
 static void video_display(VideoState *is)
 {
-	if (!is->screen)
+	if (!is->pscreen)
 		video_open(is, 0, NULL);
-	if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
-		video_audio_display(is);
-	else if (is->video_st)
-		video_image_display(is);
+
+	video_image_display(is);
 }
 
 static double get_clock(Clock *c)
@@ -1561,9 +1341,8 @@ void toggle_pause(VideoState *is)
 }
 
 /* called to display each frame */
-static void video_refresh(void *opaque, double *remaining_time)
+void video_refresh(VideoState *is, double *remaining_time)
 {
-	VideoState *is = (VideoState *)opaque;
 	double time;
 
 	Frame *sp, *sp2;
@@ -1718,6 +1497,7 @@ static void video_refresh(void *opaque, double *remaining_time)
 
 /* allocate a picture (needs to do that in main thread to avoid
 potential locking problems */
+//仅仅内存模拟不需要在主线程中进行分配，
 static void alloc_picture(VideoState *is)
 {
 	Frame *vp;
@@ -1731,7 +1511,7 @@ static void alloc_picture(VideoState *is)
 
 	vp->bmp = CreateYUVOverlay(vp->width, vp->height,
 		YV12_OVERLAY,
-		is->screen);
+		is->pscreen);
 	bufferdiff = vp->bmp ? FFMAX(vp->bmp->pixels[0], vp->bmp->pixels[1]) - FFMIN(vp->bmp->pixels[0], vp->bmp->pixels[1]) : 0;
 	if (!vp->bmp || vp->bmp->pitches[0] < vp->width || bufferdiff < (int64_t)vp->height * vp->bmp->pitches[0]) {
 		/* SDL allocates a buffer smaller than requested if the video
@@ -1743,10 +1523,7 @@ static void alloc_picture(VideoState *is)
 		do_exit(is);
 	}
 
-	lockMutex(is->pictq.mutex);
 	vp->allocated = 1;
-	signalCond(is->pictq.cond);
-	unlockMutex(is->pictq.mutex);
 }
 
 static void duplicate_right_border_pixels(Overlay *bmp) {
@@ -1785,34 +1562,12 @@ static int queue_picture(VideoState *is, AVFrame *src_frame, double pts, double 
 	if (!vp->bmp || vp->reallocate || !vp->allocated ||
 		vp->width != src_frame->width ||
 		vp->height != src_frame->height) {
-		Event event;
-
 		vp->allocated = 0;
 		vp->reallocate = 0;
 		vp->width = src_frame->width;
 		vp->height = src_frame->height;
 
-		/* the allocation must be done in the main thread to avoid
-		locking problems. */
-		event.type = FF_ALLOC_EVENT;
-		event.user.data1 = is;
-		PushEvent(&event);
-
-		/* wait until the picture is allocated */
-		//lockMutex(is->pictq.mutex);
-		std::unique_lock<mutex_t> lk(*is->pictq.mutex);
-		while (!vp->allocated && !is->videoq.abort_request) {
-			//waitCond(is->pictq.cond, is->pictq.mutex);
-			is->pictq.cond->wait(lk);
-		}
-		/* if the queue is aborted, we have to pop the pending ALLOC event or wait for the allocation to complete */
-		if (is->videoq.abort_request && PeepEvents(&event, 1, GETEVENT, EVENTMASK(FF_ALLOC_EVENT)) != 1) {
-			while (!vp->allocated && !is->abort_request) {
-				//waitCond(is->pictq.cond, is->pictq.mutex);
-				is->pictq.cond->wait(lk);
-			}
-		}
-		//unlockMutex(is->pictq.mutex);
+		alloc_picture(is);
 
 		if (is->videoq.abort_request)
 			return -1;
@@ -2363,10 +2118,12 @@ static int video_thread(void *arg){
 			avfilter_graph_free(&graph);
 			graph = avfilter_graph_alloc();
 			if ((ret = configure_video_filters(graph, is, vfilters_list ? vfilters_list[is->vfilter_idx] : NULL, frame)) < 0) {
+				/*
 				Event event;
 				event.type = FF_QUIT_EVENT;
 				event.user.data1 = is;
 				PushEvent(&event);
+				*/
 				goto the_end;
 			}
 			filt_in = is->in_video_filter;
@@ -3051,7 +2808,7 @@ fail:
 		avformat_close_input(&ic);
 		is->ic = NULL;
 	}
-
+	/*
 	if (ret != 0) {
 		Event event;
 
@@ -3059,6 +2816,7 @@ fail:
 		event.user.data1 = is;
 		PushEvent(&event);
 	}
+	*/
 	destroyMutex(wait_mutex);
 	return 0;
 }
@@ -3228,35 +2986,27 @@ the_end:
 
 void toggle_audio_display(VideoState *is)
 {
-	int bgcolor = MapRGB(is->screen->format, 0x00, 0x00, 0x00);
 	int next = is->show_mode;
 	do {
 		next = (next + 1) % SHOW_MODE_NB;
 	} while (next != is->show_mode && (next == SHOW_MODE_VIDEO && !is->video_st || next != SHOW_MODE_VIDEO && !is->audio_st));
 	if (is->show_mode != next) {
-		fill_rectangle(is->screen,
-			is->xleft, is->ytop, is->width, is->height,
-			bgcolor, 1);
 		is->force_refresh = 1;
 		is->show_mode = (ShowMode)next;
 	}
 }
 
-void refresh_loop_wait_event(VideoState *is, Event *event) {
+void refresh_loop_wait_event(VideoState *is) {
 	double remaining_time = 0.0;
-	PumpEvents();
-	while (!PeepEvents(event, 1, GETEVENT, ALLEVENTS)) {
-		if (!cursor_hidden && av_gettime_relative() - cursor_last_shown > CURSOR_HIDE_DELAY) {
-			ShowCursor(0);
-			cursor_hidden = 1;
-		}
-		if (remaining_time > 0.0)
-			av_usleep((int64_t)(remaining_time * 1000000.0));
-		remaining_time = REFRESH_RATE;
-		if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
-			video_refresh(is, &remaining_time);
-		PumpEvents();
+	if (!cursor_hidden && av_gettime_relative() - cursor_last_shown > CURSOR_HIDE_DELAY) {
+		ShowCursor(0);
+		cursor_hidden = 1;
 	}
+	if (remaining_time > 0.0)
+		av_usleep((int64_t)(remaining_time * 1000000.0));
+	remaining_time = REFRESH_RATE;
+	if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+		video_refresh(is, &remaining_time);
 }
 
 void seek_chapter(VideoState *is, int incr)

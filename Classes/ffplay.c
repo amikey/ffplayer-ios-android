@@ -779,6 +779,7 @@ static void decoder_abort(Decoder *d, FrameQueue *fq)
 static inline void fill_rectangle(SDL_Surface *screen,
                                   int x, int y, int w, int h, int color, int update)
 {
+	/*
     SDL_Rect rect;
     rect.x = x;
     rect.y = y;
@@ -787,6 +788,7 @@ static inline void fill_rectangle(SDL_Surface *screen,
     SDL_FillRect(screen, &rect, color);
     if (update && w > 0 && h > 0)
         SDL_UpdateRect(screen, x, y, w, h);
+		*/
 }
 
 /* draw only the border of a rectangle */
@@ -795,6 +797,7 @@ static void fill_border(int xleft, int ytop, int width, int height, int x, int y
     int w1, w2, h1, h2;
 
     /* fill the background */
+	/*
     w1 = x;
     if (w1 < 0)
         w1 = 0;
@@ -823,6 +826,7 @@ static void fill_border(int xleft, int ytop, int width, int height, int x, int y
                    xleft + w1, ytop + height - h2,
                    width - w1 - w2, h2,
                    color, update);
+	*/
 }
 
 #define ALPHA_BLEND(a, oldp, newp, s)\
@@ -1130,12 +1134,13 @@ static void video_image_display(VideoState *is)
         calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
 
         SDL_DisplayYUVOverlay(vp->bmp, &rect);
-
+		/*
         if (rect.x != is->last_display_rect.x || rect.y != is->last_display_rect.y || rect.w != is->last_display_rect.w || rect.h != is->last_display_rect.h || is->force_refresh) {
             int bgcolor = SDL_MapRGB(screen->format, 0x00, 0x00, 0x00);
             fill_border(is->xleft, is->ytop, is->width, is->height, rect.x, rect.y, rect.w, rect.h, bgcolor, 1);
             is->last_display_rect = rect;
         }
+		*/
     }
 }
 
@@ -1237,7 +1242,7 @@ static void video_audio_display(VideoState *s)
                            s->xleft, y, s->width, 1,
                            fgcolor, 0);
         }
-        SDL_UpdateRect(screen, s->xleft, s->ytop, s->width, s->height);
+        //SDL_UpdateRect(screen, s->xleft, s->ytop, s->width, s->height);
     } else {
         nb_display_channels= FFMIN(nb_display_channels, 2);
         if (rdft_bits != s->rdft_bits) {
@@ -1280,7 +1285,7 @@ static void video_audio_display(VideoState *s)
                             fgcolor, 0);
             }
         }
-        SDL_UpdateRect(screen, s->xpos, s->ytop, 1, s->height);
+        //SDL_UpdateRect(screen, s->xpos, s->ytop, 1, s->height);
         if (!s->paused)
             s->xpos++;
         if (s->xpos >= s->width)

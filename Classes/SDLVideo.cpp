@@ -6,15 +6,21 @@ extern "C" {
 #if __cplusplus
 }
 #endif
-namespace ff{
-	/*
-		重新实现SDL Video的部分函数
-		*/
-	int FillRect(Surface *dst, Rect *dstrect, Uint32 color)
-	{
-		return SDL_FillRect((SDL_Surface*)dst, (SDL_Rect*)dstrect, color);
-	}
 
+namespace ff{
+
+	void SDLog(const char *log)
+	{
+	}
+	Surface *CreateRGBSurface(int width, int height)
+	{
+		return (Surface*)SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	}
+	Surface * SetVideoMode(int width, int height, int bpp, Uint32 flags)
+	{
+		//return (Surface*)SDL_SetVideoMode(width, height, bpp, flags);
+		return nullptr; 
+	}
 	int LockYUVOverlay(Overlay *overlay)
 	{
 		//return SDL_LockYUVOverlay((SDL_Overlay*)overlay);
@@ -29,7 +35,7 @@ namespace ff{
 
 	int DisplayYUVOverlay(Overlay *overlay, Rect *dstrect)
 	{
-		//return SDL_DisplayYUVOverlay((SDL_Overlay*)overlay, (SDL_Rect*)dstrect);
+		return SDL_DisplayYUVOverlay((SDL_Overlay*)overlay, (SDL_Rect*)dstrect);
 		//软件模式不需要，但是该函数给出一个更新节点
 		return 0;
 	}
@@ -45,6 +51,7 @@ namespace ff{
 		}
 		*/
 		free(overlay);
+		//SDL_FreeYUVOverlay((SDL_Overlay*)overlay);
 	}
 
 	/*
@@ -834,6 +841,13 @@ namespace ff{
 	}
 
 	/*
+	Overlay * CreateYUVOverlay(int width, int height,
+		Uint32 format, Surface *display)
+	{
+		return (Overlay*)SDL_CreateYUVOverlay(width, height, format, (SDL_Surface*)display);
+	}
+	*/
+	/*
 		代码乃至于SDL_CreateYUV_SW
 	*/
 	Overlay * CreateYUVOverlay(int width, int height,
@@ -855,7 +869,7 @@ namespace ff{
 		if ((display->format->BytesPerPixel != 2) &&
 			(display->format->BytesPerPixel != 3) &&
 			(display->format->BytesPerPixel != 4)) {
-			SDL_SetError("Can't use YUV data on non 16/24/32 bit surfaces");
+			SDLog("Can't use YUV data on non 16/24/32 bit surfaces");
 			return(NULL);
 		}
 		/* Verify that we support the format */
@@ -867,7 +881,7 @@ namespace ff{
 		case YVYU_OVERLAY:
 			break;
 		default:
-			SDL_SetError("Unsupported YUV format");
+			SDLog("Unsupported YUV format");
 			return(NULL);
 		}
 
@@ -1037,23 +1051,5 @@ namespace ff{
 
 		/* We're all done.. */
 		return(overlay);
-	}
-
-	void UpdateRect(Surface *screen, Sint32 x, Sint32 y, Uint32 w, Uint32 h)
-	{
-		SDL_UpdateRect((SDL_Surface*)screen, x, y, w, h);
-	}
-
-	Uint32 MapRGB(const PixelFormat * const format, const Uint8 r, const Uint8 g, const Uint8 b)
-	{
-		return SDL_MapRGB((SDL_PixelFormat*)format, r, g, b);
-	}
-
-	/*
-		分配一个主显示Surface,这里分配一块内存代替
-	*/
-	Surface * SetVideoMode(int width, int height, int bpp, Uint32 flags)
-	{
-		return (Surface*)SDL_SetVideoMode(width, height, bpp, flags);
 	}
 }

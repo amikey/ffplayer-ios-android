@@ -35,42 +35,18 @@ bool CCFFmpegNode::init(void)
 	return true;
 }
 
-CCFFmpegNode::CCFFmpegNode() :_view(nullptr)
+CCFFmpegNode::CCFFmpegNode() :_view(nullptr) ,_texture(nullptr)
 {
 }
 
 CCFFmpegNode::~CCFFmpegNode()
 {
-	_isrun = false;
-	_pthread->join();
 }
 
 bool CCFFmpegNode::initWithURL(const std::string& url)
 {
-	if (_view)
-		_view->removeFromParentAndCleanup(true);
-	_texture = new Texture2D();
-	_buffer_width = 640;
-	_buffer_height = 480;
-	_buffer = new char[_buffer_width*_buffer_height * 3];
-	for (int i = 0; i < _buffer_height; ++i)
-	{
-		char *pline = (char*)_buffer + 3 * i*_buffer_width;
-		for (int j = 0; j < _buffer_width; ++j)
-		{
-			*(pline + 3 * j+2) = 255;
-		}
-	}
-
-	Size size;
-	_texture->initWithData(_buffer, _buffer_width*_buffer_height * 3,
-			Texture2D::PixelFormat::RGB888, _buffer_width, _buffer_height,size);
-	_view = Sprite::createWithTexture(_texture);
-	_texture->release();
-	_view->setAnchorPoint(Vec2(0, 0));
-	addChild(_view);
-	_pthread = new std::thread(&CCFFmpegNode::updateBuffer,this);
-	_isrun = true;
+	//_pthread = new std::thread(&CCFFmpegNode::updateBuffer,this);
+	//_isrun = true;
 	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/60, false);
 	
 	_video.open("1.m3u8");
@@ -79,23 +55,30 @@ bool CCFFmpegNode::initWithURL(const std::string& url)
 
 void CCFFmpegNode::updateTexture(float dt)
 {
-	_texture->updateWithData(_buffer, 0, 0, _buffer_width, _buffer_height);
-}
-
-void CCFFmpegNode::updateBuffer()
-{
-	char s = 0;
-	while (_isrun)
+	if (_video.isOpen())
 	{
-		for (int i = 0; i < _buffer_height; ++i)
+		void *data = _video.image();
+		if (data && !_texture)
 		{
-			char *pline = (char*)_buffer + 3 * i*_buffer_width;
-			for (int j = 0; j < _buffer_width; ++j)
-			{
-				*(pline + 3 * j + 1) = (char)rand();
-				s++;
-			}
+			_texture = new Texture2D();
+			_width = _video.width();
+			_height = _video.height();
+			if (_view)
+				_view->removeFromParentAndCleanup(true);
+
+			Size size;
+			_texture->initWithData(data, _width*_height * 3,
+				Texture2D::PixelFormat::RGB888, _width, _height, size);
+			_view = Sprite::createWithTexture(_texture);
+			_texture->release();
+			_view->setAnchorPoint(Vec2(0, 0));
+			_view->setPosition(Vec2(0, 0));
+			_view->setVisible(true);
+			_view->setContentSize(Size(_width, _height));
+			addChild(_view);
 		}
-		
+
+		if (_texture)
+			_texture->updateWithData(data, 0, 0, _width, _height);
 	}
 }

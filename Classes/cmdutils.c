@@ -60,6 +60,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
+#include "windows.h"
 
 static int init_report(const char *env);
 
