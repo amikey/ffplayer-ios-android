@@ -1065,7 +1065,7 @@ namespace ff{
 			if (!swdata->stretch) {
 				display = swdata->display;
 				swdata->stretch = CreateRGBSurface(
-					SDL_SWSURFACE,
+					SWSURFACE,
 					overlay->w, overlay->h,
 					display->format->BitsPerPixel,
 					display->format->Rmask,

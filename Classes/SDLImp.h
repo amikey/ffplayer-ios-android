@@ -69,13 +69,19 @@ namespace ff{
 #define ALPHA_OPAQUE 255
 #define ALPHA_TRANSPARENT 0
 
+	/** Evaluates to true if the surface needs to be locked before access */
+#define SDL_MUSTLOCK(surface)	\
+	(surface->offset || \
+	((surface->flags & (HWSURFACE | ASYNCBLIT | RLEACCEL)) != 0))
+
 	/* RGB conversion lookup tables */
 	struct Surface;
 	struct Overlay;
+	struct Color;
 
 	struct Palette {
 		int       ncolors;
-		SDL_Color *colors;
+		Color *colors;
 	};
 
 	struct private_yuvhwfuncs {
@@ -182,6 +188,9 @@ namespace ff{
 		void *aux_data;
 	};
 
+	/** typedef for private surface blitting functions */
+	typedef int(*SDL_blit)(Surface *src, Rect *srcrect,Surface *dst, Rect *dstrect);
+
 	/* Blit mapping definition */
 	struct BlitMap {
 		Surface *dst;
@@ -235,6 +244,8 @@ namespace ff{
 	int DisplayYUVOverlay(Overlay *overlay, Rect *dstrect);
 	void FreeYUVOverlay(Overlay *overlay);
 	Overlay * CreateYUVOverlay(int width, int height,
+		Uint32 format, Surface *display);
+	Overlay * CreateYUV_SW(int width, int height,
 		Uint32 format, Surface *display);
 
 	Surface * CreateRGBSurface(Uint32 flags,

@@ -5,18 +5,6 @@ namespace ff{
 	void SDLog(const char *log)
 	{
 	}
-	Surface * CreateRGBSurface(Uint32 flags,
-		int width, int height, int depth,
-		Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
-	{
-		//return (Surface*)SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-		return NULL;
-	}
-	void FreeSurface(Surface *surface)
-	{
-
-	}
-
 	int LockYUVOverlay(Overlay *overlay)
 	{
 		if (overlay == NULL) {
