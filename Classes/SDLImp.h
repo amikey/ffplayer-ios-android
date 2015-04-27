@@ -336,5 +336,7 @@ namespace ff{
 	int PeepEvents(Event *events, int numevents,
 		eventaction action, Uint32 mask);
 	void PumpEvents(void);
+
+	void CCLog(const char* msg);
 }
 #endif

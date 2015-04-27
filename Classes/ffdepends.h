@@ -281,6 +281,7 @@ namespace ff{
 		一个RGB缓冲区
 		*/
 		Surface *pscreen;
+		bool isend;
 	};
 
 	/*
@@ -303,10 +304,12 @@ namespace ff{
 	void seek_chapter(VideoState *is, int incr);
 	void stream_seek(VideoState *is, int64_t pos, int64_t rel, int seek_by_bytes);
 	void step_to_next_frame(VideoState *is);
+	int64_t frame_queue_last_pos(FrameQueue *f);
 
 	void stream_cycle_channel(VideoState *is, int codec_type);
 	void toggle_audio_display(VideoState *is);
 
+	double get_master_clock(VideoState *is);
 	/*
 	内部函数
 	*/

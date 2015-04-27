@@ -4,6 +4,14 @@
 
 USING_NS_CC;
 
+namespace ff
+{
+	void CCLog(const char* msg)
+	{
+		cocos2d::CCLog(msg);
+	}
+}
+
 CCFFmpegNode* CCFFmpegNode::create()
 {
 	CCFFmpegNode *node = new CCFFmpegNode();
@@ -45,19 +53,18 @@ CCFFmpegNode::~CCFFmpegNode()
 
 bool CCFFmpegNode::initWithURL(const std::string& url)
 {
-	//_pthread = new std::thread(&CCFFmpegNode::updateBuffer,this);
-	//_isrun = true;
-	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/60, false);
+	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/30, false);
 	
 	_video.open("1.m3u8");
 	return true;
 }
 
+static int s = 0;
 void CCFFmpegNode::updateTexture(float dt)
 {
 	if (_video.isOpen())
 	{
-		void *data = _video.image();
+		void *data = _video.refresh();
 		if (data && !_texture)
 		{
 			_texture = new Texture2D();
@@ -76,9 +83,21 @@ void CCFFmpegNode::updateTexture(float dt)
 			_view->setVisible(true);
 			_view->setContentSize(Size(_width, _height));
 			addChild(_view);
+			
+		}
+		if (s == 0){
+			_video.seek(80);
+			s = 1;
 		}
 
-		if (_texture)
-			_texture->updateWithData(data, 0, 0, _width, _height);
+		if (_texture && data )
+		{
+			_texture->updateWithData(data, 0, 0, _width, _height);			
+		}
+		CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s)", _video.cur(), _video.length(),
+			_video.isPlaying() ? "true" : "false",
+			_video.isEnd() ? "true" : "false",
+			_video.hasVideo() ? "true" : "false",
+			_video.hasAudio() ? "true" : "false");
 	}
 }

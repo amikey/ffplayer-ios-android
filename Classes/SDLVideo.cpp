@@ -1,9 +1,12 @@
 #include "SDLImp.h"
-
+/*
+	Ç¨ÒÆSDL YUVOverlay
+*/
 namespace ff{
 
 	void SDLog(const char *log)
 	{
+		CCLog(log);
 	}
 	int LockYUVOverlay(Overlay *overlay)
 	{

@@ -1,5 +1,8 @@
 #include "SDLImp.h"
 
+/*
+	SDL Overlay »Ì µœ÷
+*/
 namespace ff{
 	int DisplayYUV_SW(Overlay *overlay, Rect *src, Rect *dst);
 

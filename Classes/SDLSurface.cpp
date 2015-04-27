@@ -1,13 +1,5 @@
 #include "SDLImp.h"
 
-#if __cplusplus
-extern "C" {
-#endif
-#include <SDL.h>
-#if __cplusplus
-}
-#endif
-
 namespace ff{
 	void UnlockSurface(Surface *surface)
 	{

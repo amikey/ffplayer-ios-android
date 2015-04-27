@@ -1,110 +1,171 @@
 #include "ff.h"
 #include "ffdepends.h"
 
-using namespace ff;
-
-static bool isInitFF = false;
-
-FFVideo::FFVideo() :_ctx(nullptr)
+namespace ff
 {
-	if (!isInitFF){
-		initFF();
-		isInitFF = true;
-	}
-}
+	static bool isInitFF = false;
 
-FFVideo::~FFVideo()
-{
-	close();
-}
-
-bool FFVideo::open(const char *url)
-{
-	_ctx = stream_open(url, NULL);
-	return isOpen();
-}
-
-void FFVideo::seek(float t)
-{
-
-}
-
-float FFVideo::cur()
-{
-	return 0;
-}
-
-bool FFVideo::isPause() const
-{
-	return isOpen() && is_stream_pause((VideoState*)_ctx);
-}
-
-bool FFVideo::isPlaying() const
-{
-	return !isPause();
-}
-
-bool FFVideo::isOpen() const
-{
-	VideoState* _vs = (VideoState*)_ctx;
-	return  (_vs && (_vs->audio_st || _vs->video_st));
-}
-
-int FFVideo::width() const
-{
-	if (!isOpen())return -1;
-	VideoState* _vs = (VideoState*)_ctx;
-	if (!_vs->video_st->codec)return -1;
-	return _vs->video_st->codec->width;
-}
-
-int FFVideo::height() const
-{
-	if (!isOpen())return -1;
-	VideoState* _vs = (VideoState*)_ctx;
-	if (!_vs->video_st->codec)return -1;
-	return _vs->video_st->codec->height;
-}
-
-void *FFVideo::image() const
-{
-	VideoState* _vs = (VideoState*)_ctx;
-	if (_vs && _vs->pscreen)
+	FFVideo::FFVideo() :_ctx(nullptr)
 	{
-		double r = 1 / 30;
-		video_refresh(_vs, &r);
-		return _vs->pscreen->pixels;
+		if (!isInitFF){
+			initFF();
+			isInitFF = true;
+		}
 	}
-	return nullptr;
-}
 
-int FFVideo::length() const
-{
-	if (!isOpen())return -1;
-	return 0;//not impentment
-}
-
-void FFVideo::pause()
-{
-	if (isOpen()&&!is_stream_pause((VideoState*)_ctx))
+	FFVideo::~FFVideo()
 	{
-		toggle_pause((VideoState*)_ctx);
+		close();
 	}
-}
 
-void FFVideo::play()
-{
-	if (isOpen() && is_stream_pause((VideoState*)_ctx))
+	bool FFVideo::open(const char *url)
 	{
-		toggle_pause((VideoState*)_ctx);
+		close();
+		_ctx = stream_open(url, NULL);
+		return isOpen();
 	}
-}
 
-void FFVideo::close()
-{
-	if (_ctx)
+	void FFVideo::seek(double t)
 	{
-		stream_close((VideoState*)_ctx);
-		_ctx = nullptr;
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			if (t > length())
+				t = length();
+			if (t < 0)
+				t = 0;
+			int64_t ts = t * 1000000LL;
+			stream_seek(_vs, ts, 0, 0);
+		}
+	}
+
+	bool FFVideo::isEnd() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			double pos = -1;
+			if( _vs->video_stream >= 0 )
+				pos = frame_queue_last_pos(&_vs->pictq);
+			if (_vs->audio_stream>=0 )
+				pos = frame_queue_last_pos(&_vs->sampq);
+			if (pos<0)
+				pos = avio_tell(_vs->ic->pb);
+			return true;
+		}
+		return false;
+	}
+
+	double FFVideo::cur() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			double pos;
+			pos = get_master_clock(_vs);
+			if (isnan(pos))
+				pos = (double)_vs->seek_pos / AV_TIME_BASE;
+			return pos;
+		}
+		return -1;
+	}
+
+	double FFVideo::length() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			return (double)_vs->ic->duration / 1000000LL;
+		}
+		return 0;
+	}
+
+	bool FFVideo::hasVideo() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			return _vs->video_st ? true : false;
+		}
+		return false;
+	}
+
+	bool FFVideo::hasAudio() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			return _vs->audio_st ? true : false;
+		}
+		return false;
+	}
+
+	bool FFVideo::isPause() const
+	{
+		return isOpen() && is_stream_pause((VideoState*)_ctx);
+	}
+
+	bool FFVideo::isPlaying() const
+	{
+		return !isPause();
+	}
+
+	bool FFVideo::isOpen() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		return  (_vs && (_vs->audio_st || _vs->video_st));
+	}
+
+	int FFVideo::width() const
+	{
+		if (!isOpen())return -1;
+		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->video_st->codec)return -1;
+		return _vs->video_st->codec->width;
+	}
+
+	int FFVideo::height() const
+	{
+		if (!isOpen())return -1;
+		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->video_st->codec)return -1;
+		return _vs->video_st->codec->height;
+	}
+
+	void *FFVideo::refresh() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs && _vs->pscreen)
+		{
+			double r = 1 / 30;
+			video_refresh(_vs, &r);
+			return _vs->pscreen->pixels;
+		}
+		return nullptr;
+	}
+
+	void FFVideo::pause()
+	{
+		if (isOpen() && !is_stream_pause((VideoState*)_ctx))
+		{
+			toggle_pause((VideoState*)_ctx);
+		}
+	}
+
+	void FFVideo::play()
+	{
+		if (isOpen() && is_stream_pause((VideoState*)_ctx))
+		{
+			toggle_pause((VideoState*)_ctx);
+		}
+	}
+
+	void FFVideo::close()
+	{
+		if (_ctx)
+		{
+			stream_close((VideoState*)_ctx);
+			_ctx = nullptr;
+		}
 	}
 }

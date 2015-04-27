@@ -20,7 +20,7 @@ protected:
 	Texture2D *_texture;
 	int _width;
 	int _height;
-	FFVideo _video;
+	ff::FFVideo _video;
 	void updateTexture(float dt);
 };
 
