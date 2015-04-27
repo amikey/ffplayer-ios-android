@@ -1,14 +1,6 @@
 #include "ffdepends.h"
 #include "ff.h"
 
-#if __cplusplus
-extern "C" {
-#endif
-#include <SDL.h>
-#if __cplusplus
-}
-#endif
-
 namespace ff{
 
 const char program_name[] = "ffplay";
@@ -166,9 +158,9 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 
 	w = FFMIN(16383, w);
 
-	SDL_SetVideoMode(w, h, 0, HWSURFACE | ASYNCBLIT | HWACCEL);
+	//SDL_SetVideoMode(w, h, 0, HWSURFACE | ASYNCBLIT | HWACCEL);
 	if (!is->pscreen)
-		is->pscreen = (Surface*)SDL_CreateRGBSurface(SWSURFACE,w, h,24,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
+		is->pscreen = (Surface*)CreateRGBSurface(SWSURFACE,w, h,24,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
 	if (!is->pscreen) {
 		av_log(NULL, AV_LOG_FATAL, "SDL: could not set video mode - exiting\n");
 		do_exit(is);
@@ -561,7 +553,7 @@ static void video_image_display(VideoState *is)
 
 		calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
 
-		SDL_DisplayYUVOverlay((SDL_Overlay*)vp->bmp, (SDL_Rect*)&rect);
+		DisplayYUVOverlay(vp->bmp, &rect);
 	}
 }
 

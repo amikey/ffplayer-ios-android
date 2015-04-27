@@ -1,6 +1,8 @@
 #include "SDLImp.h"
 
 namespace ff{
+	int DisplayYUV_SW(Overlay *overlay, Rect *src, Rect *dst);
+
 	int LockYUV_SW(Overlay *overlay)
 	{
 		return(0);
@@ -1031,7 +1033,7 @@ namespace ff{
 		return(overlay);
 	}
 
-	int SDL_DisplayYUV_SW(Overlay *overlay, Rect *src, Rect *dst)
+	int DisplayYUV_SW(Overlay *overlay, Rect *src, Rect *dst)
 	{
 		struct private_yuvhwdata *swdata;
 		int stretch;
@@ -1110,7 +1112,7 @@ namespace ff{
 			SDLog("Unsupported YUV format in blit");
 			return(-1);
 		}
-		if (SDL_MUSTLOCK(display)) {
+		if (MUSTLOCK(display)) {
 			if (LockSurface(display) < 0) {
 				return(-1);
 			}
@@ -1135,14 +1137,16 @@ namespace ff{
 			swdata->Display1X(swdata->colortab, swdata->rgb_2_pix,
 				lum, Cr, Cb, dstp, overlay->h, overlay->w, mod);
 		}
-		if (SDL_MUSTLOCK(display)) {
+		if (MUSTLOCK(display)) {
 			UnlockSurface(display);
 		}
+		/*
 		if (stretch) {
 			display = swdata->display;
 			SoftStretch(swdata->stretch, src, display, dst);
 		}
-		UpdateRects(display, 1, dst);
+		*/
+		//UpdateRects(display, 1, dst);
 
 		return(0);
 	}

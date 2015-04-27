@@ -70,7 +70,7 @@ namespace ff{
 #define ALPHA_TRANSPARENT 0
 
 	/** Evaluates to true if the surface needs to be locked before access */
-#define SDL_MUSTLOCK(surface)	\
+#define MUSTLOCK(surface)	\
 	(surface->offset || \
 	((surface->flags & (HWSURFACE | ASYNCBLIT | RLEACCEL)) != 0))
 
@@ -247,6 +247,9 @@ namespace ff{
 		int width, int height, int depth,
 		Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 	void FreeSurface(Surface *);
+	void UnlockSurface(Surface *surface);
+	int LockSurface(Surface *surface);
+
 	/*
 		SDL ¸¨Öúº¯Êý
 		*/
