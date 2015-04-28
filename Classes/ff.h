@@ -34,6 +34,13 @@ namespace ff
 			因此你可以直接用来作为材质使用
 		*/
 		void *refresh() const;
+
+		/*
+			网络预加载进度
+		*/
+		double preload() const;
+		int audio_preload() const;
+		int video_preload() const;
 	private:
 		void* _ctx;
 	};

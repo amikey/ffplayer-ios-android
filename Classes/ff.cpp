@@ -511,7 +511,7 @@ static int frame_queue_prev(FrameQueue *f)
 }
 
 /* return the number of undisplayed frames in the queue */
-static int frame_queue_nb_remaining(FrameQueue *f)
+int frame_queue_nb_remaining(FrameQueue *f)
 {
 	return f->size - f->rindex_shown;
 }
@@ -1376,7 +1376,6 @@ void video_refresh(VideoState *is, double *remaining_time)
 	retry:
 		if (frame_queue_nb_remaining(&is->pictq) == 0) {
 			// nothing to do, no picture to display in the queue
-			is->isend = true;
 		}
 		else {
 			double last_duration, duration, delay;
@@ -1454,7 +1453,6 @@ void video_refresh(VideoState *is, double *remaining_time)
 			}
 
 		display:
-			is->isend = false;
 			/* display picture */
 			if (!display_disable && is->show_mode == SHOW_MODE_VIDEO)
 				video_display(is);
@@ -2473,6 +2471,7 @@ fail:
 void stream_seek(VideoState *is, int64_t pos, int64_t rel, int seek_by_bytes)
 {
 	if (!is->seek_req) {
+
 		is->seek_pos = pos;
 		is->seek_rel = rel;
 		is->seek_flags &= ~AVSEEK_FLAG_BYTE;
@@ -2845,7 +2844,6 @@ VideoState *stream_open(const char *filename, AVInputFormat *iformat)
 	is->iformat = iformat;
 	is->ytop = 0;
 	is->xleft = 0;
-	is->isend = false;
 	do 
 	{
 		/* start video display */

@@ -51,11 +51,20 @@ CCFFmpegNode::~CCFFmpegNode()
 {
 }
 
+static int pidx = 0;
+static const char * movies[] = { 
+	"http://dl-lejiaolexue.qiniudn.com/07766ef6c835484fa8eaf606353f0cee.m3u8",
+	"http://dl-lejiaolexue.qiniudn.com/92dc0b8689d64c1682d3d3f2501b3e8d.m3u8",
+	"http://dl-lejiaolexue.qiniudn.com/729c4a6a87c541ff8e9eff183ce98658.m3u8",
+	"http://dl-lejiaolexue.qiniudn.com/835764b62d6e47e9b0c7cab42ed90fa3.m3u8"
+};
 bool CCFFmpegNode::initWithURL(const std::string& url)
 {
 	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/30, false);
 	
-	_video.open("1.m3u8");
+	//_video.open("1.m3u8");
+	_video.open(movies[pidx++]);
+	
 	return true;
 }
 
@@ -79,25 +88,36 @@ void CCFFmpegNode::updateTexture(float dt)
 			_view = Sprite::createWithTexture(_texture);
 			_texture->release();
 			_view->setAnchorPoint(Vec2(0, 0));
+
 			_view->setPosition(Vec2(0, 0));
 			_view->setVisible(true);
 			_view->setContentSize(Size(_width, _height));
+			_view->setScaleX(1.6);
+			_view->setScaleY(1.6);
 			addChild(_view);
-			
 		}
+		/*
 		if (s == 0){
 			_video.seek(80);
 			s = 1;
-		}
+		}*/
 
 		if (_texture && data )
 		{
 			_texture->updateWithData(data, 0, 0, _width, _height);			
 		}
-		CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s)", _video.cur(), _video.length(),
+		CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s ,a %d v %d)", _video.cur(), _video.length(),
 			_video.isPlaying() ? "true" : "false",
 			_video.isEnd() ? "true" : "false",
 			_video.hasVideo() ? "true" : "false",
-			_video.hasAudio() ? "true" : "false");
+			_video.hasAudio() ? "true" : "false",
+			_video.audio_preload(),
+			_video.video_preload());
+		if (_video.isEnd())
+		{
+			_video.open(movies[pidx++]);
+			if (pidx >= sizeof(movies) / sizeof(const char*))
+				pidx = 0;
+		}
 	}
 }

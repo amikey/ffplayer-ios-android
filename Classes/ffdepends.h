@@ -281,7 +281,6 @@ namespace ff{
 		Ò»¸öRGB»º³åÇø
 		*/
 		Surface *pscreen;
-		bool isend;
 	};
 
 	/*
@@ -305,6 +304,7 @@ namespace ff{
 	void stream_seek(VideoState *is, int64_t pos, int64_t rel, int seek_by_bytes);
 	void step_to_next_frame(VideoState *is);
 	int64_t frame_queue_last_pos(FrameQueue *f);
+	int frame_queue_nb_remaining(FrameQueue *f);
 
 	void stream_cycle_channel(VideoState *is, int codec_type);
 	void toggle_audio_display(VideoState *is);

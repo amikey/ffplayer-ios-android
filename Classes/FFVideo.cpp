@@ -41,19 +41,39 @@ namespace ff
 
 	bool FFVideo::isEnd() const
 	{
-		VideoState* _vs = (VideoState*)_ctx;
-		if (_vs)
+		VideoState* is = (VideoState*)_ctx;
+		if (is)
 		{
-			double pos = -1;
-			if( _vs->video_stream >= 0 )
-				pos = frame_queue_last_pos(&_vs->pictq);
-			if (_vs->audio_stream>=0 )
-				pos = frame_queue_last_pos(&_vs->sampq);
-			if (pos<0)
-				pos = avio_tell(_vs->ic->pb);
-			return true;
+			if((!is->audio_st || (is->auddec.finished == is->audioq.serial && frame_queue_nb_remaining(&is->sampq) == 0)) &&
+				(!is->video_st || (is->viddec.finished == is->videoq.serial && frame_queue_nb_remaining(&is->pictq) == 0))) 
+				return true;
 		}
 		return false;
+	}
+
+	double FFVideo::preload() const
+	{
+		return -1;
+	}
+
+	int FFVideo::audio_preload() const
+	{
+		VideoState* is = (VideoState*)_ctx;
+		if (is)
+		{
+			return frame_queue_nb_remaining(&is->sampq);
+		}
+		return -1;
+	}
+
+	int FFVideo::video_preload() const
+	{
+		VideoState* is = (VideoState*)_ctx;
+		if (is)
+		{
+			return frame_queue_nb_remaining(&is->pictq);
+		}
+		return -1;
 	}
 
 	double FFVideo::cur() const
