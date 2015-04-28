@@ -159,9 +159,12 @@ namespace ff
 		VideoState* _vs = (VideoState*)_ctx;
 		if (_vs && _vs->pscreen)
 		{
-			double r = 1 / 30;
-			video_refresh(_vs, &r);
-			return _vs->pscreen->pixels;
+			if (!is_stream_pause((VideoState*)_ctx))
+			{
+				double r = 1 / 30;
+				video_refresh(_vs, &r);
+				return _vs->pscreen->pixels;
+			}
 		}
 		return nullptr;
 	}

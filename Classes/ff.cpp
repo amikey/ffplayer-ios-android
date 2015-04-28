@@ -7,7 +7,7 @@
 namespace ff{
 /* options specified by the user */
 //AVInputFormat *file_iformat;
-const char *input_filename;
+//const char *input_filename;
 const char *window_title;
 int fs_screen_width;
 int fs_screen_height;
@@ -176,7 +176,7 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 	}
 
 	if (!window_title)
-		window_title = input_filename;
+		window_title = is->filename;
 	
 	WM_SetCaption(window_title, window_title);
 
@@ -1336,7 +1336,7 @@ void stream_toggle_pause(VideoState *is)
 	if (is->paused) {
 		is->frame_timer += av_gettime_relative() / 1000000.0 - is->vidclk.last_updated;
 		if (is->read_pause_return != AVERROR(ENOSYS)) {
-			is->vidclk.paused = 0;
+		is->vidclk.paused = 0;
 		}
 		set_clock(&is->vidclk, get_clock(&is->vidclk), is->vidclk.serial);
 	}
@@ -2580,7 +2580,7 @@ static int read_thread(void *arg)
 	is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
 	if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0)))
-		window_title = av_asprintf("%s - %s", t->value, input_filename);
+		window_title = av_asprintf("%s - %s", t->value, is->filename);
 
 	/* if seeking requested, we execute it */
 	if (start_time != AV_NOPTS_VALUE) {
@@ -2686,7 +2686,7 @@ static int read_thread(void *arg)
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
 		if (is->paused &&
 			(!strcmp(ic->iformat->name, "rtsp") ||
-			(ic->pb && !strncmp(input_filename, "mmsh:", 5)))) {
+			(ic->pb && !strncmp(is->filename, "mmsh:", 5)))) {
 			/* wait 10 ms to avoid trying to get another packet */
 			/* XXX: horrible */
 			Delay(10);

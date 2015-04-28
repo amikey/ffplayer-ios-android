@@ -15,7 +15,7 @@ Scene* HelloWorld::scene()
 	
     // add layer as a child to scene
     scene->addChild(layer);
-	scene->addChild(ff);
+	layer->addChild(ff);
     // return the scene
     return scene;
 }
@@ -48,7 +48,7 @@ bool HelloWorld::init()
     // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+    this->addChild(menu, 100);
     
     /////////////////////////////
     // 3. add your codes below...

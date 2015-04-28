@@ -1,6 +1,6 @@
 #include "SDLImp.h"
 
-#ifdef _Win32
+#ifdef WIN32
 	#if __cplusplus
 	extern "C" {
 	#endif
