@@ -65,10 +65,8 @@ bool CCFFmpegNode::initWithURL(const std::string& url)
 {
 	getScheduler()->schedule(schedule_selector(CCFFmpegNode::updateTexture), this, 1/30, false);
 	
-	//_video.open("1.m3u8");
-	_video.open(movies[pidx++]);
-	
-	return true;
+	//return _video.open(url);
+	return _video.open(movies[pidx++]);
 }
 
 void CCFFmpegNode::updateTexture(float dt)
@@ -84,7 +82,11 @@ void CCFFmpegNode::updateTexture(float dt)
 				_width = _video.width();
 				_height = _video.height();
 				if (_view)
+				{
 					_view->removeFromParentAndCleanup(true);
+
+					TextureCache::getInstance()->removeUnusedTextures();
+				}
 
 				Size size;
 				_texture->initWithData(data, _width*_height * 3,

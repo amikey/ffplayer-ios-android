@@ -68,7 +68,12 @@ namespace ff
 		VideoState* is = (VideoState*)_ctx;
 		if (is)
 		{
-			return FFMIN(is->audioq.nb_packets, is->videoq.nb_packets);
+			if (is->audio_st && is->video_st)
+				return FFMIN(is->audioq.nb_packets, is->videoq.nb_packets);
+			else if (is->audio_st)
+				return is->audioq.nb_packets;
+			else
+				return  is->videoq.nb_packets;
 		}
 		return -1;
 	}
