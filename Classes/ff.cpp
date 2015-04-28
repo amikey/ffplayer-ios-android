@@ -21,7 +21,7 @@ int subtitle_disable;
 const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = { 0 };
 int seek_by_bytes = -1;
 int display_disable;
-int show_status = 1;
+int show_status = 0;
 int av_sync_type = AV_SYNC_AUDIO_MASTER;
 int64_t start_time = AV_NOPTS_VALUE;
 int64_t duration = AV_NOPTS_VALUE;
@@ -914,12 +914,12 @@ double get_master_clock(VideoState *is)
 }
 
 static void check_external_clock_speed(VideoState *is) {
-	if (is->video_stream >= 0 && is->videoq.nb_packets <= MIN_FRAMES / 2 ||
-		is->audio_stream >= 0 && is->audioq.nb_packets <= MIN_FRAMES / 2) {
+	if (is->video_stream >= 0 && is->videoq.nb_packets <= is->nMIN_FRAMES / 2 ||
+		is->audio_stream >= 0 && is->audioq.nb_packets <= is->nMIN_FRAMES / 2) {
 		set_clock_speed(&is->extclk, FFMAX(EXTERNAL_CLOCK_SPEED_MIN, is->extclk.speed - EXTERNAL_CLOCK_SPEED_STEP));
 	}
-	else if ((is->video_stream < 0 || is->videoq.nb_packets > MIN_FRAMES * 2) &&
-		(is->audio_stream < 0 || is->audioq.nb_packets > MIN_FRAMES * 2)) {
+	else if ((is->video_stream < 0 || is->videoq.nb_packets > is->nMIN_FRAMES * 2) &&
+		(is->audio_stream < 0 || is->audioq.nb_packets > is->nMIN_FRAMES * 2)) {
 		set_clock_speed(&is->extclk, FFMIN(EXTERNAL_CLOCK_SPEED_MAX, is->extclk.speed + EXTERNAL_CLOCK_SPEED_STEP));
 	}
 	else {
@@ -2515,8 +2515,10 @@ static int read_thread(void *arg)
 
 	ic = avformat_alloc_context();
 	if (!ic) {
-		My_log(NULL, AV_LOG_FATAL, "Could not allocate context.\n");
+		//My_log(NULL, AV_LOG_FATAL, "Could not allocate context.\n");
 		ret = AVERROR(ENOMEM);
+		is->errmsg = "Could not allocate context.";
+		is->errcode = ret;
 		goto fail;
 	}
 	ic->interrupt_callback.callback = decode_interrupt_cb;
@@ -2527,16 +2529,21 @@ static int read_thread(void *arg)
 	}
 	err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
 	if (err < 0) {
-		print_error(is->filename, err);
+		//print_error(is->filename, err);
+		is->errmsg = "Could not open input file.";
+		is->errcode = -1;
 		ret = -1;
 		goto fail;
 	}
-	if (scan_all_pmts_set)
+	
+	//if (scan_all_pmts_set)
 		av_dict_set(&format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE);
 
 	if ((t = av_dict_get(format_opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
 		My_log(NULL, AV_LOG_ERROR, "Option %s not found.\n", t->key);
 		ret = AVERROR_OPTION_NOT_FOUND;
+		is->errmsg = "Option not found";
+		is->errcode = -1;
 		goto fail;
 	}
 	is->ic = ic;
@@ -2558,6 +2565,8 @@ static int read_thread(void *arg)
 	if (err < 0) {
 		My_log(NULL, AV_LOG_WARNING,
 			"%s: could not find codec parameters\n", is->filename);
+		is->errmsg = "Option not found";
+		is->errcode = -1;
 		ret = -1;
 		goto fail;
 	}
@@ -2656,6 +2665,8 @@ static int read_thread(void *arg)
 		My_log(NULL, AV_LOG_FATAL, "Failed to open file '%s' or configure filtergraph\n",
 			is->filename);
 		ret = -1;
+		is->errmsg = "Failed to open file or configure filtergraph";
+		is->errcode = -1;
 		goto fail;
 	}
 
@@ -2734,10 +2745,10 @@ static int read_thread(void *arg)
 		/* if the queue are full, no need to read more */
 		if (infinite_buffer<1 &&
 			(is->audioq.size + is->videoq.size + is->subtitleq.size > MAX_QUEUE_SIZE
-			|| ((is->audioq.nb_packets > MIN_FRAMES || is->audio_stream < 0 || is->audioq.abort_request)
-			&& (is->videoq.nb_packets > MIN_FRAMES || is->video_stream < 0 || is->videoq.abort_request
+			|| ((is->audioq.nb_packets > is->nMIN_FRAMES || is->audio_stream < 0 || is->audioq.abort_request)
+			&& (is->videoq.nb_packets > is->nMIN_FRAMES || is->video_stream < 0 || is->videoq.abort_request
 			|| (is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC))
-			&& (is->subtitleq.nb_packets > MIN_FRAMES || is->subtitle_stream < 0 || is->subtitleq.abort_request)))) {
+			&& (is->subtitleq.nb_packets > is->nMIN_FRAMES || is->subtitle_stream < 0 || is->subtitleq.abort_request)))) {
 			/* wait 10 ms */
 			//lockMutex(wait_mutex);
 			std::unique_lock<mutex_t> lk(*wait_mutex);
@@ -2844,6 +2855,9 @@ VideoState *stream_open(const char *filename, AVInputFormat *iformat)
 	is->iformat = iformat;
 	is->ytop = 0;
 	is->xleft = 0;
+	is->nMIN_FRAMES = MIN_FRAMES;
+	is->errcode = 0;
+	is->errmsg = nullptr;
 	do 
 	{
 		/* start video display */

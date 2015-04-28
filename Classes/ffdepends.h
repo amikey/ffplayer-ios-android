@@ -43,7 +43,7 @@ extern "C" {
 
 namespace ff{
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
-#define MIN_FRAMES 5
+#define MIN_FRAMES 50
 
 	/* Minimum SDL audio buffer size, in samples. */
 #define AUDIO_MIN_BUFFER_SIZE 512
@@ -281,6 +281,9 @@ namespace ff{
 		Ò»¸öRGB»º³åÇø
 		*/
 		Surface *pscreen;
+		int nMIN_FRAMES;
+		const char *errmsg;
+		int errcode;
 	};
 
 	/*

@@ -21,8 +21,8 @@ namespace ff
 	bool FFVideo::open(const char *url)
 	{
 		close();
-		_ctx = stream_open(url, NULL);
-		return isOpen();
+		 _ctx = stream_open(url, NULL);
+		 return _ctx != nullptr;
 	}
 
 	void FFVideo::seek(double t)
@@ -41,37 +41,34 @@ namespace ff
 
 	bool FFVideo::isEnd() const
 	{
-		VideoState* is = (VideoState*)_ctx;
-		if (is)
+		if (isOpen())
 		{
-			if((!is->audio_st || (is->auddec.finished == is->audioq.serial && frame_queue_nb_remaining(&is->sampq) == 0)) &&
-				(!is->video_st || (is->viddec.finished == is->videoq.serial && frame_queue_nb_remaining(&is->pictq) == 0))) 
-				return true;
+			VideoState* is = (VideoState*)_ctx;
+			if (is)
+			{
+				if ((!is->audio_st || (is->auddec.finished == is->audioq.serial && frame_queue_nb_remaining(&is->sampq) == 0)) &&
+					(!is->video_st || (is->viddec.finished == is->videoq.serial && frame_queue_nb_remaining(&is->pictq) == 0)))
+					return true;
+			}
 		}
 		return false;
 	}
 
-	double FFVideo::preload() const
-	{
-		return -1;
-	}
-
-	int FFVideo::audio_preload() const
+	void FFVideo::set_preload_nb(int n)
 	{
 		VideoState* is = (VideoState*)_ctx;
 		if (is)
 		{
-			return frame_queue_nb_remaining(&is->sampq);
+			is->nMIN_FRAMES = n;
 		}
-		return -1;
 	}
 
-	int FFVideo::video_preload() const
+	int FFVideo::preload_packet_nb() const
 	{
 		VideoState* is = (VideoState*)_ctx;
 		if (is)
 		{
-			return frame_queue_nb_remaining(&is->pictq);
+			return FFMIN(is->audioq.nb_packets, is->videoq.nb_packets);
 		}
 		return -1;
 	}
@@ -93,7 +90,7 @@ namespace ff
 	double FFVideo::length() const
 	{
 		VideoState* _vs = (VideoState*)_ctx;
-		if (_vs)
+		if (_vs && _vs->ic )
 		{
 			return (double)_vs->ic->duration / 1000000LL;
 		}
@@ -187,5 +184,25 @@ namespace ff
 			stream_close((VideoState*)_ctx);
 			_ctx = nullptr;
 		}
+	}
+
+	bool FFVideo::isError() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			return _vs->errcode != 0;
+		}
+		return false;
+	}
+
+	const char * FFVideo::errorMsg() const
+	{
+		VideoState* _vs = (VideoState*)_ctx;
+		if (_vs)
+		{
+			return _vs->errmsg;
+		}
+		return nullptr;
 	}
 }
