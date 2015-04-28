@@ -43,7 +43,8 @@ bool CCFFmpegNode::init(void)
 	return true;
 }
 
-CCFFmpegNode::CCFFmpegNode() :_view(nullptr), _texture(nullptr), _play(nullptr)
+CCFFmpegNode::CCFFmpegNode() :_view(nullptr), _texture(nullptr), 
+_play(nullptr), _bar(nullptr)
 {
 }
 
@@ -93,7 +94,7 @@ void CCFFmpegNode::updateTexture(float dt)
 			_texture->release();
 			_view->setAnchorPoint(Vec2(0, 0));
 
-			_view->setPosition(Vec2(0, 0));
+			//_view->setPosition(Vec2(0, 0));
 			_view->setVisible(true);
 			_view->setContentSize(Size(_width, _height));
 			//测试缩放效果
@@ -108,12 +109,29 @@ void CCFFmpegNode::updateTexture(float dt)
 				_play->setAnchorPoint(Vec2(0, 0));
 				_play->setPosition(Vec2(0, 0));
 				_play->addTouchEventListener(CC_CALLBACK_2(CCFFmpegNode::onPlay,this));
-				_view->addChild(_play,1);
+				addChild(_play);
 				_view->setPosition(Vec2(0, 24));
+			}
+			//加入一个进度条
+			if (!_bar)
+			{
+				//"slider_bar_active_9patch.png"
+				_bar = ui::LoadingBar::create("sliderProgress.png");
+				_bar->setAnchorPoint(Vec2(0, 0));
+				_bar->setScale9Enabled(true);
+				_bar->setCapInsets(Rect(4,4,250-8,13-8));
+				//_bar->setDirection(ui::LoadingBar::Direction::RIGHT);
+				_bar->setPosition(Vec2(_play->getContentSize().width, 24));
+				_bar->setContentSize(Size(420,16));
+				addChild(_bar);
 			}
 		}
 	}
 
+	if (_bar)
+	{
+		_bar->setPercent(100 * _video.cur() / _video.length());
+	}
 	//打印状态
 	CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s ,preload %d)", _video.cur(), _video.length(),
 		_video.isPlaying() ? "true" : "false",
@@ -135,16 +153,11 @@ void CCFFmpegNode::onPlay(Ref *pSender, ui::Widget::TouchEventType type)
 {
 	if (type == ui::Widget::TouchEventType::ENDED)
 	{
-		if (_video.isOpen())
-		{
-			buttonState(!_video.isPlaying());
-			if (_video.isPlaying())
-				_video.pause();
-			else
-				_video.play();
-		}
+		if (_video.isPlaying())
+			_video.pause();
 		else
-			buttonState(true);
+			_video.play();
+		buttonState(!_video.isPlaying());
 	}
 }
 

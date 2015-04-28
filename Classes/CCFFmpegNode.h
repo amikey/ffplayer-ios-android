@@ -3,6 +3,7 @@
 #include "ff.h"
 #include "cocos2d.h"
 #include "ui/UIButton.h"
+#include "ui/UILoadingBar.h"
 #include <thread>
 
 NS_CC_BEGIN
@@ -19,6 +20,7 @@ public:
 protected:
 	Sprite *_view;
 	ui::Button *_play;
+	ui::LoadingBar *_bar;
 	Texture2D *_texture;
 	int _width;
 	int _height;
