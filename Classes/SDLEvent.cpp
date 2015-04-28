@@ -1,5 +1,6 @@
 #include "SDLImp.h"
 
+/*
 #if __cplusplus
 extern "C" {
 #endif
@@ -7,6 +8,7 @@ extern "C" {
 #if __cplusplus
 }
 #endif
+
 namespace ff{
 	int PushEvent(Event *event)
 	{
@@ -24,3 +26,4 @@ namespace ff{
 		SDL_PumpEvents();
 	}
 }
+*/

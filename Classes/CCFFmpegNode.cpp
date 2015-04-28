@@ -8,7 +8,7 @@ namespace ff
 {
 	void CCLog(const char* msg)
 	{
-		cocos2d::CCLog(msg);
+		cocos2d::CCLog("%s",msg);
 	}
 }
 
@@ -51,7 +51,7 @@ CCFFmpegNode::~CCFFmpegNode()
 {
 }
 
-static int pidx = 3;
+static int pidx = 6;
 static const char * movies[] = { 
 	"http://dl-lejiaolexue.qiniudn.com/07766ef6c835484fa8eaf606353f0cee.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/92dc0b8689d64c1682d3d3f2501b3e8d.m3u8",
@@ -60,6 +60,8 @@ static const char * movies[] = {
 	"wuzi.mp3",
 	"niux.mp3",
 	"2.mp4",
+	"jiaren.mp4",
+	"lufang.mp4",
 };
 bool CCFFmpegNode::initWithURL(const std::string& url)
 {
