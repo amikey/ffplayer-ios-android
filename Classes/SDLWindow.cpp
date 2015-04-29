@@ -1,4 +1,6 @@
 #include "SDLImp.h"
+#include <stdlib.h>
+
 namespace ff{
 	char *my_getenv(const char *name)
 	{

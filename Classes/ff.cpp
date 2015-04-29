@@ -64,7 +64,7 @@ void static My_log(void* p,int inval,const char* fmt,...)
 	char buf[1024];
 	va_list argp;
 	va_start(argp, fmt);
-	_snprintf(buf, 1024 - 3, fmt, argp);
+	snprintf(buf, 1024 - 3, fmt, argp);
 	va_end(argp);
 	CCLog(buf);
 	*/
@@ -1464,6 +1464,7 @@ void video_refresh(VideoState *is, double *remaining_time)
 		}
 	}
 	is->force_refresh = 0;
+	/*
 	if (show_status) {
 		static int64_t last_time;
 		int64_t cur_time;
@@ -1502,7 +1503,7 @@ void video_refresh(VideoState *is, double *remaining_time)
 			fflush(stdout);
 			last_time = cur_time;
 		}
-	}
+	}*/
 }
 
 /* allocate a picture (needs to do that in main thread to avoid
@@ -1812,10 +1813,10 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 	AVRational fr = av_guess_frame_rate(is->ic, is->video_st, NULL);
 
 	av_opt_get_int(sws_opts, "sws_flags", 0, &sws_flags);
-	_snprintf(sws_flags_str, sizeof(sws_flags_str), "flags=%"PRId64, sws_flags);
+	snprintf(sws_flags_str, sizeof(sws_flags_str), "flags=%"PRId64, sws_flags);
 	graph->scale_sws_opts = av_strdup(sws_flags_str);
 
-	_snprintf(buffersrc_args, sizeof(buffersrc_args),
+	snprintf(buffersrc_args, sizeof(buffersrc_args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		frame->width, frame->height, frame->format,
 		is->video_st->time_base.num, is->video_st->time_base.den,
@@ -1877,7 +1878,7 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 			}
 			else {
 				char rotate_buf[64];
-				_snprintf(rotate_buf, sizeof(rotate_buf), "%s*PI/180", rotate_tag->value);
+				snprintf(rotate_buf, sizeof(rotate_buf), "%s*PI/180", rotate_tag->value);
 				INSERT_FILT("rotate", rotate_buf);
 			}
 		}
@@ -1915,13 +1916,13 @@ static int configure_audio_filters(VideoState *is, const char *afilters, int for
 		aresample_swr_opts[strlen(aresample_swr_opts) - 1] = '\0';
 	av_opt_set(is->agraph, "aresample_swr_opts", aresample_swr_opts, 0);
 
-	ret = _snprintf(asrc_args, sizeof(asrc_args),
+	ret = snprintf(asrc_args, sizeof(asrc_args),
 		"sample_rate=%d:sample_fmt=%s:channels=%d:time_base=%d/%d",
 		is->audio_filter_src.freq, av_get_sample_fmt_name(is->audio_filter_src.fmt),
 		is->audio_filter_src.channels,
 		1, is->audio_filter_src.freq);
 	if (is->audio_filter_src.channel_layout)
-		_snprintf(asrc_args + ret, sizeof(asrc_args)-ret,
+		snprintf(asrc_args + ret, sizeof(asrc_args)-ret,
 		":channel_layout=0x%"PRIx64, is->audio_filter_src.channel_layout);
 
 	ret = avfilter_graph_create_filter(&filt_asrc,

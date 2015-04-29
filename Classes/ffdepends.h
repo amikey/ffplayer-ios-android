@@ -39,6 +39,10 @@ extern "C" {
 }
 #endif
 
+#ifdef WIN32
+#define snprintf _snprintf
+#endif
+
 #include <assert.h>
 
 namespace ff{
