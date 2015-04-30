@@ -19,16 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_config.h"
+#include "../SDL_config.h"
 #include "SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
 
-#include "SDL.h"
+#include "../SDL.h"
 
 /* !!! FIXME: Shouldn't these be included in SDL.h? */
-#include "SDL_shape.h"
-#include "SDL_syswm.h"
+//#include "../SDL_shape.h"
+//#include "../SDL_syswm.h"
 
 /* This is the version of the dynamic API. This doesn't match the SDL version
    and should not change until there's been a major revamp in API/ABI.

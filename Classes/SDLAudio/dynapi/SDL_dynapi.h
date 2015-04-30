@@ -48,7 +48,7 @@
 #elif SDL_BUILDING_WINRT /* probaly not useful on WinRT, given current .dll loading restrictions */
 #define SDL_DYNAMIC_API 0
 #else   /* everyone else. */
-#define SDL_DYNAMIC_API 1
+#define SDL_DYNAMIC_API 0
 #endif
 
 #endif

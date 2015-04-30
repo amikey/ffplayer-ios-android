@@ -27,6 +27,9 @@
     <Filter Include="Classes\SDLAudio\thread">
       <UniqueIdentifier>{feb48f24-2e48-490a-aea6-c081a4522988}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\SDLAudio\dynapi">
+      <UniqueIdentifier>{2a87884c-79a4-4e54-8d35-ae92db037ecc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp">
@@ -176,6 +179,12 @@
     <ClCompile Include="..\Classes\SDLAudio\thread\windows\SDL_systls.c">
       <Filter>Classes\SDLAudio\thread</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\dynapi\SDL_dynapi.c">
+      <Filter>Classes\SDLAudio\dynapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h">
@@ -238,5 +247,19 @@
     <ClInclude Include="..\Classes\SDLAudio\thread\windows\SDL_systhread_c.h">
       <Filter>Classes\SDLAudio\thread</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\dynapi\SDL_dynapi.h">
+      <Filter>Classes\SDLAudio\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\dynapi\SDL_dynapi_overrides.h">
+      <Filter>Classes\SDLAudio\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\dynapi\SDL_dynapi_procs.h">
+      <Filter>Classes\SDLAudio\dynapi</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Classes\SDLAudio\dynapi\gendynapi.pl">
+      <Filter>Classes\SDLAudio\dynapi</Filter>
+    </None>
   </ItemGroup>
 </Project>
