@@ -23,13 +23,13 @@ LOCAL_SRC_FILES := main.cpp \
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
-LOCAL_WHOLE_STATIC_LIBRARIES += cocos_ui_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
 LOCAL_WHOLE_STATIC_LIBRARIES += ffmpeg_static
+LOCAL_WHOLE_STATIC_LIBRARIES += cocos_ui_static
 
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,.)
-$(call import-module,cocos/ui)
 $(call import-module,audio/android)
 $(call import-module,ffmpeg/prebuilt/android)
+$(call import-module,cocos/ui)

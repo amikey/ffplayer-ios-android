@@ -28,6 +28,7 @@ PREFIX=./android/$CPU
     --enable-swresample \
     --enable-avformat \
     --enable-avcodec \
+	--enable-protocol=http \	
     --disable-optimizations \
     --disable-debug \
     --disable-doc \

@@ -60,14 +60,12 @@ AVDictionary *format_opts, *codec_opts, *resample_opts;
 
 void static My_log(void* p,int inval,const char* fmt,...)
 {
-	/*
 	char buf[1024];
 	va_list argp;
 	va_start(argp, fmt);
-	snprintf(buf, 1024 - 3, fmt, argp);
+	vsnprintf(buf, 1024 - 3, fmt, argp);
 	va_end(argp);
 	CCLog(buf);
-	*/
 }
 
 static inline
@@ -1299,9 +1297,9 @@ static double compute_target_delay(double delay, VideoState *is)
 				delay = 2 * delay;
 		}
 	}
-
-	My_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n",
-		delay, -diff);
+	if( show_status )
+		My_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n",
+			delay, -diff);
 
 	return delay;
 }
