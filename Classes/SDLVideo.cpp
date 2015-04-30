@@ -4,9 +4,10 @@
 */
 namespace ff{
 
-	void SDLog(const char *log)
+	int SDLog(const char *log)
 	{
-		CCLog(log);
+		CCLog("%s",log);
+		return 1;
 	}
 	int LockYUVOverlay(Overlay *overlay)
 	{

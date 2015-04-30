@@ -61,11 +61,11 @@ AVDictionary *format_opts, *codec_opts, *resample_opts;
 void static My_log(void* p,int inval,const char* fmt,...)
 {
 	char buf[1024];
-	va_list argp;
-	va_start(argp, fmt);
-	vsnprintf(buf, 1024 - 3, fmt, argp);
-	va_end(argp);
-	CCLog(buf);
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buf, 1024 - 3, fmt, args);
+	va_end(args);
+	CCLog("%s",buf);
 }
 
 static inline

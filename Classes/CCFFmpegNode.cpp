@@ -6,9 +6,13 @@ USING_NS_CC;
 
 namespace ff
 {
-	void CCLog(const char* msg)
+	int CCLog(const char* fmt,...)
 	{
-		cocos2d::CCLog("%s",msg);
+		va_list argp;
+		va_start(argp, fmt);
+		cocos2d::CCLog(fmt, argp);
+		va_end(argp);
+		return 1;
 	}
 }
 

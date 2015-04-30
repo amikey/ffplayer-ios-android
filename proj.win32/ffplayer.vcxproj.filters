@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Classes\SDLAudio">
+      <UniqueIdentifier>{15b7d036-5b20-432d-a3d8-392b1a7b9357}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp">
@@ -50,6 +53,27 @@
     <ClCompile Include="..\Classes\SDLSurface.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="SDLAudio_mm.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_audio.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_audiocvt.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_audiodev.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_audiotypecvt.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_mixer.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_wave.c">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h">
@@ -75,6 +99,21 @@
     </ClInclude>
     <ClInclude Include="..\Classes\ffdepends.h">
       <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\SDL_audio_c.h">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\SDL_audiodev_c.h">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\SDL_audiomem.h">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\SDL_sysaudio.h">
+      <Filter>Classes\SDLAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\SDL_wave.h">
+      <Filter>Classes\SDLAudio</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

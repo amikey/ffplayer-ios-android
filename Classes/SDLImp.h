@@ -43,36 +43,196 @@ namespace ff{
 		Uint16 w, h;
 	};
 
+	#ifdef __cplusplus
+	#define SDL_reinterpret_cast(type, expression) reinterpret_cast<type>(expression)
+	#define SDL_static_cast(type, expression) static_cast<type>(expression)
+	#define SDL_const_cast(type, expression) const_cast<type>(expression)
+	#else
+	#define SDL_reinterpret_cast(type, expression) ((type)(expression))
+	#define SDL_static_cast(type, expression) ((type)(expression))
+	#define SDL_const_cast(type, expression) ((type)(expression))
+	#endif
+
+	typedef Uint32 AudioDeviceID;
+	#define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
+	#define SDL_TABLESIZE(table)    SDL_arraysize(table)
+	#define INIT_AUDIO          0x00000010
+	#define WAVE_FORMAT_IEEE_FLOAT 0x0003
+	#define NUM_BUFFERS 2
+	#define AUDIO_MASK_BITSIZE       (0xFF)
+	#define AUDIO_BITSIZE(x)         (x & AUDIO_MASK_BITSIZE)
+	#define SDL_AUDIO_MASK_DATATYPE      (1<<8)
+	#define SDL_AUDIO_ISFLOAT(x)         (x & SDL_AUDIO_MASK_DATATYPE)
+	#define SDL_zero(x) memset(&(x), 0, sizeof((x)))
+	#define SDL_zerop(x) memset((x), 0, sizeof(*(x)))
+
+	/* Used by audio targets during DetectDevices() */
+	typedef void(*AddAudioDevice)(const char *name);
+	
+	typedef Uint16 AudioFormat;
+
+	struct AudioCVT;
+	typedef void (* AudioFilter) (struct AudioCVT * cvt,AudioFormat format);
+	struct AudioCVT
+	{
+		int needed;                 /**< Set to 1 if conversion possible */
+		AudioFormat src_format; /**< Source audio format */
+		AudioFormat dst_format; /**< Target audio format */
+		double rate_incr;           /**< Rate conversion increment */
+		Uint8 *buf;                 /**< Buffer to hold entire audio data */
+		int len;                    /**< Length of original audio buffer */
+		int len_cvt;                /**< Length of converted audio buffer */
+		int len_mult;               /**< buffer must be len*len_mult big */
+		double len_ratio;           /**< Given len, final size is len*len_ratio */
+		AudioFilter filters[10];        /**< Filter list */
+		int filter_index;           /**< Current audio conversion function */
+	};
+	/* Streamer */
+	struct AudioStreamer
+	{
+		Uint8 *buffer;
+		int max_len;                /* the maximum length in bytes */
+		int read_pos, write_pos;    /* the position of the write and read heads in bytes */
+	};
+	/**
+	*  This function is called when the audio device needs more data.
+	*
+	*  \param userdata An application-specific parameter saved in
+	*                  the SDL_AudioSpec structure
+	*  \param stream A pointer to the audio data buffer.
+	*  \param len    The length of that buffer in bytes.
+	*
+	*  Once the callback returns, the buffer will no longer be valid.
+	*  Stereo samples are stored in a LRLRLR ordering.
+	*/
+	typedef void (* AudioCallback) (void *userdata, Uint8 * stream,int len);
+	/**
+	*  The calculated values in this structure are calculated by SDL_OpenAudio().
+	*/
+	struct AudioSpec
+	{
+		int freq;                   /**< DSP frequency -- samples per second */
+		AudioFormat format;     /**< Audio data format */
+		Uint8 channels;             /**< Number of channels: 1 mono, 2 stereo */
+		Uint8 silence;              /**< Audio buffer silence value (calculated) */
+		Uint16 samples;             /**< Audio buffer size in samples (power of 2) */
+		Uint16 padding;             /**< Necessary for some compile environments */
+		Uint32 size;                /**< Audio buffer size in bytes (calculated) */
+		AudioCallback callback;
+		void *userdata;
+	};
+#ifdef WIN32
+#include <Windows.h>
+#include <mmsystem.h>
+
+	struct PrivateAudioData
+	{
+		HWAVEOUT hout;
+		HWAVEIN hin;
+		HANDLE audio_sem;
+		Uint8 *mixbuf;              /* The raw allocated mixing buffer */
+		WAVEHDR wavebuf[NUM_BUFFERS];       /* Wave audio fragments */
+		int next_buffer;
+	};
+#endif
+	/* Define the SDL audio driver structure */
+	struct AudioDevice
+	{
+		/* * * */
+		/* Data common to all devices */
+
+		/* The current audio specification (shared with audio thread) */
+		AudioSpec spec;
+
+		/* An audio conversion block for audio format emulation */
+		AudioCVT convert;
+
+		/* The streamer, if sample rate conversion necessitates it */
+		int use_streamer;
+		AudioStreamer streamer;
+
+		/* Current state flags */
+		int iscapture;
+		int enabled;
+		int paused;
+		int opened;
+
+		/* Fake audio buffer for when the audio hardware is busy */
+		Uint8 *fake_stream;
+
+		/* A semaphore for locking the mixing buffers */
+		mutex_t *mixer_lock;
+
+		/* A thread to feed the audio device */
+		thread_t *thread;
+		//threadID threadid;
+
+		/* * * */
+		/* Data private to this driver */
+		PrivateAudioData *hidden;
+	};
+
+	struct AudioDriverImpl
+	{
+		void(*DetectDevices) (int iscapture, AddAudioDevice addfn);
+		int(*OpenDevice) (AudioDevice *_this, const char *devname, int iscapture);
+		void(*ThreadInit) (AudioDevice *_this); /* Called by audio thread at start */
+		void(*WaitDevice) (AudioDevice *_this);
+		void(*PlayDevice) (AudioDevice *_this);
+		Uint8 *(*GetDeviceBuf) (AudioDevice *_this);
+		void(*WaitDone) (AudioDevice *_this);
+		void(*CloseDevice) (AudioDevice *_this);
+		void(*LockDevice) (AudioDevice *_this);
+		void(*UnlockDevice) (AudioDevice *_this);
+		void(*Deinitialize) (void);
+
+		/* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
+
+		/* Some flags to push duplicate code into the core and reduce #ifdefs. */
+		int ProvidesOwnCallbackThread;
+		int SkipMixerLock;  /* !!! FIXME: do we need this anymore? */
+		int HasCaptureSupport;
+		int OnlyHasDefaultOutputDevice;
+		int OnlyHasDefaultInputDevice;
+	};
+	struct AudioBootStrap
+	{
+		const char *name;
+		const char *desc;
+		int(*init) (AudioDriverImpl * impl);
+		int demand_only;  /* 1==request explicitly, or it won't be available. */
+	};
+	extern AudioBootStrap audio_driver;
 	/*
 		从SDL_video.h复制而来
 		*/
-#define SWSURFACE	0x00000000	/**< Surface is in system memory */
-#define HWSURFACE	0x00000001	/**< Surface is in video memory */
-#define ASYNCBLIT	0x00000004	/**< Use asynchronous blits if possible */
-#define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
-#define FULLSCREEN	0x80000000	/**< Surface is a full screen display */
-#define RESIZABLE 	0x00000010	/**< This video mode may be resized */
+	#define SWSURFACE	0x00000000	/**< Surface is in system memory */
+	#define HWSURFACE	0x00000001	/**< Surface is in video memory */
+	#define ASYNCBLIT	0x00000004	/**< Use asynchronous blits if possible */
+	#define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
+	#define FULLSCREEN	0x80000000	/**< Surface is a full screen display */
+	#define RESIZABLE 	0x00000010	/**< This video mode may be resized */
 
-#define YV12_OVERLAY  0x32315659	/**< Planar mode: Y + V + U  (3 planes) */
-#define IYUV_OVERLAY  0x56555949	/**< Planar mode: Y + U + V  (3 planes) */
-#define YUY2_OVERLAY  0x32595559	/**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
-#define UYVY_OVERLAY  0x59565955	/**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
-#define YVYU_OVERLAY  0x55595659	/**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+	#define YV12_OVERLAY  0x32315659	/**< Planar mode: Y + V + U  (3 planes) */
+	#define IYUV_OVERLAY  0x56555949	/**< Planar mode: Y + U + V  (3 planes) */
+	#define YUY2_OVERLAY  0x32595559	/**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
+	#define UYVY_OVERLAY  0x59565955	/**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+	#define YVYU_OVERLAY  0x55595659	/**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
 
-#define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
-#define SRCCOLORKEY	0x00001000	/**< Blit uses a source color key */
-#define RLEACCELOK	0x00002000	/**< Private flag */
-#define RLEACCEL	0x00004000	/**< Surface is RLE encoded */
-#define SRCALPHA	0x00010000	/**< Blit uses source alpha blending */
-#define PREALLOC	0x01000000	/**< Surface uses preallocated memory */
+	#define HWACCEL	0x00000100	/**< Blit uses hardware acceleration */
+	#define SRCCOLORKEY	0x00001000	/**< Blit uses a source color key */
+	#define RLEACCELOK	0x00002000	/**< Private flag */
+	#define RLEACCEL	0x00004000	/**< Surface is RLE encoded */
+	#define SRCALPHA	0x00010000	/**< Blit uses source alpha blending */
+	#define PREALLOC	0x01000000	/**< Surface uses preallocated memory */
 
-#define ALPHA_OPAQUE 255
-#define ALPHA_TRANSPARENT 0
+	#define ALPHA_OPAQUE 255
+	#define ALPHA_TRANSPARENT 0
 
 	/** Evaluates to true if the surface needs to be locked before access */
-#define MUSTLOCK(surface)	\
-	(surface->offset || \
-	((surface->flags & (HWSURFACE | ASYNCBLIT | RLEACCEL)) != 0))
+	#define MUSTLOCK(surface)	\
+		(surface->offset || \
+		((surface->flags & (HWSURFACE | ASYNCBLIT | RLEACCEL)) != 0))
 
 	/* RGB conversion lookup tables */
 	struct Surface;
@@ -229,7 +389,7 @@ namespace ff{
 		int refcount;				/**< Read-mostly */
 	};
 
-	void SDLog(const char *log);
+	int SDLog(const char *log);
 
 	/*
 		SDL Video替代函数
@@ -254,7 +414,6 @@ namespace ff{
 		SDL 辅助函数
 		*/
 	void WM_SetCaption(const char *title, const char *icon);
-	int ShowCursor(int toggle);
 	void Quit(void);
 	char *GetError(void);
 	char *my_getenv(const char *name);
@@ -280,26 +439,13 @@ namespace ff{
 #define AUDIO_S16SYS	AUDIO_S16MSB
 #endif
 
-	struct AudioSpec {
-		int freq;		/**< DSP frequency -- samples per second */
-		Uint16 format;		/**< Audio data format */
-		Uint8  channels;	/**< Number of channels: 1 mono, 2 stereo */
-		Uint8  silence;		/**< Audio buffer silence value (calculated) */
-		Uint16 samples;		/**< Audio buffer size in samples (power of 2) */
-		Uint16 padding;		/**< Necessary for some compile environments */
-		Uint32 size;		/**< Audio buffer size in bytes (calculated) */
-		/**
-		*  This function is called when the audio device needs more data.
-		*
-		*  @param[out] stream	A pointer to the audio data buffer
-		*  @param[in]  len	The length of the audio buffer in bytes.
-		*
-		*  Once the callback returns, the buffer will no longer be valid.
-		*  Stereo samples are stored in a LRLRLR ordering.
-		*/
-		void(*callback)(void *userdata, Uint8 *stream, int len);
-		void  *userdata;
-	};
+#define AUDIO_S32LSB    0x8020  /**< 32-bit integer samples */
+#define AUDIO_S32MSB    0x9020  /**< As above, but big-endian byte order */
+#define AUDIO_S32       AUDIO_S32LSB
+
+#define AUDIO_F32LSB    0x8120  /**< 32-bit floating point samples */
+#define AUDIO_F32MSB    0x9120  /**< As above, but big-endian byte order */
+#define AUDIO_F32       AUDIO_F32LSB
 
 	int OpenAudio(AudioSpec *desired, AudioSpec *obtained);
 	void CloseAudio(void);
@@ -337,6 +483,6 @@ namespace ff{
 		eventaction action, Uint32 mask);
 	void PumpEvents(void);
 
-	void CCLog(const char* msg);
+	int CCLog(const char* fmt,...);
 }
 #endif

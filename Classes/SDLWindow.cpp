@@ -11,11 +11,6 @@ namespace ff{
 	{
 	}
 
-	int ShowCursor(int toggle)
-	{
-		return 0;
-	}
-
 	void Quit(void)
 	{
 	}
