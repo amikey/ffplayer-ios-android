@@ -1,5 +1,8 @@
 #include "SDLImp.h"
-#include "SDLAudio/SDL_audio.h"
+
+extern "C" {
+	#include "SDLAudio/SDL_audio.h"
+}
 /*
 #ifdef WIN32
 	#if __cplusplus
@@ -15,12 +18,10 @@ namespace ff{
 	/*
 		重新实现SDL Audio的部分函数
 		*/
-	static AudioDriver current_audio;
 
 	int OpenAudio(AudioSpec *desired, AudioSpec *obtained)
 	{
-		audio_driver.init(&audio);
-		return 0;
+		return SDL_OpenAudio((SDL_AudioSpec*)desired, (SDL_AudioSpec*)obtained);
 	}
 
 	/*
@@ -28,9 +29,11 @@ namespace ff{
 		*/
 	void CloseAudio(void)
 	{
+		return SDL_CloseAudio();
 	}
 
 	void PauseAudio(int pause_on)
 	{
+		return SDL_PauseAudio(pause_on);
 	}
 }

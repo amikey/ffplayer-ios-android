@@ -18,17 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if SDL_AUDIO_DRIVER_WINMM
 
 /* Allow access to a raw mixing buffer */
 
-#include "../../core/windows/SDL_windows.h"
+#include "../core/windows/SDL_windows.h"
 #include <mmsystem.h>
 
-#include "SDL_timer.h"
-#include "SDL_audio.h"
+#include "../SDL_timer.h"
+#include "../SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_winmm.h"
 

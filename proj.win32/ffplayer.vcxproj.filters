@@ -12,6 +12,21 @@
     <Filter Include="Classes\SDLAudio">
       <UniqueIdentifier>{15b7d036-5b20-432d-a3d8-392b1a7b9357}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\SDLAudio\winmm">
+      <UniqueIdentifier>{2ebc3734-468d-4e87-ab85-0ef56c9dbe93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\SDLAudio\core">
+      <UniqueIdentifier>{f94246f4-2b27-4163-9c47-5db9e6b831c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\SDLAudio\stdlib">
+      <UniqueIdentifier>{85716e59-97a3-4963-8348-25dc50856feb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\SDLAudio\libm">
+      <UniqueIdentifier>{f4ebcd81-76fd-4d2c-9deb-e00b009c0bcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\SDLAudio\thread">
+      <UniqueIdentifier>{feb48f24-2e48-490a-aea6-c081a4522988}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp">
@@ -74,6 +89,93 @@
     <ClCompile Include="..\Classes\SDLAudio\SDL_wave.c">
       <Filter>Classes\SDLAudio</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\winmm\SDL_winmm.c">
+      <Filter>Classes\SDLAudio\winmm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\core\windows\SDL_windows.c">
+      <Filter>Classes\SDLAudio\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_getenv.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_iconv.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_malloc.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_qsort.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_stdlib.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\stdlib\SDL_string.c">
+      <Filter>Classes\SDLAudio\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\e_atan2.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\e_log.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\e_pow.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\e_rem_pio2.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\e_sqrt.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\k_cos.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\k_rem_pio2.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\k_sin.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_atan.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_copysign.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_cos.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_fabs.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_floor.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_scalbn.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\libm\s_sin.c">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\SDL_error.c">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\thread\SDL_thread.c">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\thread\windows\SDL_sysmutex.c">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\thread\windows\SDL_syssem.c">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\thread\windows\SDL_systhread.c">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio\thread\windows\SDL_systls.c">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h">
@@ -114,6 +216,27 @@
     </ClInclude>
     <ClInclude Include="..\Classes\SDLAudio\SDL_wave.h">
       <Filter>Classes\SDLAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\winmm\SDL_winmm.h">
+      <Filter>Classes\SDLAudio\winmm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\core\windows\SDL_windows.h">
+      <Filter>Classes\SDLAudio\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\libm\math_libm.h">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\libm\math_private.h">
+      <Filter>Classes\SDLAudio\libm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\thread\SDL_systhread.h">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\thread\SDL_thread_c.h">
+      <Filter>Classes\SDLAudio\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SDLAudio\thread\windows\SDL_systhread_c.h">
+      <Filter>Classes\SDLAudio\thread</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
