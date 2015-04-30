@@ -7,3 +7,4 @@ proj.win32/Debug/
 proj.android/assets/
 proj.android/obj/
 proj.android/bin/
+proj.android/libs/
