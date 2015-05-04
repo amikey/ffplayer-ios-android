@@ -53,6 +53,15 @@
     <ClCompile Include="SDLAudio_mm.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="SDL.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLAudioCVT.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudioTypeCVT.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h">

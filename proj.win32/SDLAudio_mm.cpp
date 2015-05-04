@@ -439,7 +439,7 @@ namespace ff
 					return 1;   /* _this audio target is available. */
 				}
 
-			AudioBootStrap audio_driver = {
+			AudioBootStrap WINMM_bootstrap = {
 				"winmm", "Windows Waveform Audio", WINMM_Init, 0
 			};
 }

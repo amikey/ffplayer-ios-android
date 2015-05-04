@@ -11,16 +11,66 @@
 #include <thread>
 
 namespace ff{
+	#define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
+	#define SDL_max(x, y) (((x) > (y)) ? (x) : (y))
+
 	typedef int8_t		Sint8;
 	typedef uint8_t		Uint8;
 	typedef int16_t		Sint16;
 	typedef uint16_t	Uint16;
 	typedef int32_t		Sint32;
 	typedef uint32_t	Uint32;
+	typedef int64_t Sint64;
+
+	inline Uint16 SDL_Swap16(Uint16 x)
+	{
+		return static_cast<Uint16>( ((x << 8) | (x >> 8)));
+	}
+
+	inline Uint32
+		SDL_Swap32(Uint32 x)
+	{
+		return static_cast<Uint32>(((x << 24) | ((x << 8) & 0x00FF0000) |
+			((x >> 8) & 0x0000FF00) | (x >> 24)));
+	}
+
+	inline float
+		SDL_SwapFloat(float x)
+	{
+		union
+		{
+			float f;
+			Uint32 ui32;
+		} swapper;
+		swapper.f = x;
+		swapper.ui32 = SDL_Swap32(swapper.ui32);
+		return swapper.f;
+	}
+
+	#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	#define SDL_SwapLE16(X) (X)
+	#define SDL_SwapLE32(X) (X)
+	#define SDL_SwapLE64(X) (X)
+	#define SDL_SwapFloatLE(X)  (X)
+	#define SDL_SwapBE16(X) SDL_Swap16(X)
+	#define SDL_SwapBE32(X) SDL_Swap32(X)
+	#define SDL_SwapBE64(X) SDL_Swap64(X)
+	#define SDL_SwapFloatBE(X)  SDL_SwapFloat(X)
+	#else
+	#define SDL_SwapLE16(X) SDL_Swap16(X)
+	#define SDL_SwapLE32(X) SDL_Swap32(X)
+	#define SDL_SwapLE64(X) SDL_Swap64(X)
+	#define SDL_SwapFloatLE(X)  SDL_SwapFloat(X)
+	#define SDL_SwapBE16(X) (X)
+	#define SDL_SwapBE32(X) (X)
+	#define SDL_SwapBE64(X) (X)
+	#define SDL_SwapFloatBE(X)  (X)
+	#endif
 
 	typedef std::mutex mutex_t;
 	typedef std::condition_variable cond_t;
 	typedef std::thread thread_t;
+	typedef std::thread::id threadid_t;
 
 	void Delay(Uint32 ms);
 
@@ -28,6 +78,7 @@ namespace ff{
 	int lockMutex(mutex_t *);
 	int unlockMutex(mutex_t *);
 	void destroyMutex(mutex_t *);
+	threadid_t currentThreadId();
 
 	cond_t * createCond();
 	int waitCond(cond_t*, mutex_t *);
@@ -65,6 +116,32 @@ namespace ff{
 	#define SDL_AUDIO_ISFLOAT(x)         (x & SDL_AUDIO_MASK_DATATYPE)
 	#define SDL_zero(x) memset(&(x), 0, sizeof((x)))
 	#define SDL_zerop(x) memset((x), 0, sizeof(*(x)))
+
+	#define SDL_AllocAudioMem   malloc
+	#define SDL_FreeAudioMem    free
+
+	#define DEFAULT_OUTPUT_DEVNAME "System audio output device"
+	#define DEFAULT_INPUT_DEVNAME "System audio capture device"
+
+	#define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
+	#define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002
+	#define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
+	#define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE)
+
+	#define SDL_AUDIO_MASK_BITSIZE       (0xFF)
+	#define SDL_AUDIO_MASK_DATATYPE      (1<<8)
+	#define SDL_AUDIO_MASK_ENDIAN        (1<<12)
+	#define SDL_AUDIO_MASK_SIGNED        (1<<15)
+	#define SDL_AUDIO_BITSIZE(x)         (x & SDL_AUDIO_MASK_BITSIZE)
+	#define SDL_AUDIO_ISFLOAT(x)         (x & SDL_AUDIO_MASK_DATATYPE)
+	#define SDL_AUDIO_ISBIGENDIAN(x)     (x & SDL_AUDIO_MASK_ENDIAN)
+	#define SDL_AUDIO_ISSIGNED(x)        (x & SDL_AUDIO_MASK_SIGNED)
+	#define SDL_AUDIO_ISINT(x)           (!SDL_AUDIO_ISFLOAT(x))
+	#define SDL_AUDIO_ISLITTLEENDIAN(x)  (!SDL_AUDIO_ISBIGENDIAN(x))
+	#define SDL_AUDIO_ISUNSIGNED(x)      (!SDL_AUDIO_ISSIGNED(x))
+
+	#define SDL_INIT_TIMER          0x00000001
+	#define SDL_INIT_AUDIO          0x00000010
 
 	/* Used by audio targets during DetectDevices() */
 	typedef void(*AddAudioDevice)(const char *name);
@@ -165,7 +242,7 @@ namespace ff{
 
 		/* A thread to feed the audio device */
 		thread_t *thread;
-		//threadID threadid;
+		threadid_t threadid;
 
 		/* * * */
 		/* Data private to this driver */
@@ -196,7 +273,7 @@ namespace ff{
 		int OnlyHasDefaultInputDevice;
 	};
 
-	typedef struct AudioDriver
+	struct AudioDriver
 	{
 		/* * * */
 		/* The name of this audio driver */
@@ -222,6 +299,23 @@ namespace ff{
 		int(*init) (AudioDriverImpl * impl);
 		int demand_only;  /* 1==request explicitly, or it won't be available. */
 	};
+
+	struct SDL_AudioRateFilters
+	{
+		AudioFormat fmt;
+		int channels;
+		int upsample;
+		int multiple;
+		AudioFilter filter;
+	} ;
+	struct SDL_AudioTypeFilters
+	{
+		AudioFormat src_fmt;
+		AudioFormat dst_fmt;
+		AudioFilter filter;
+	} ;
+	extern const SDL_AudioRateFilters sdl_audio_rate_filters[];
+	extern const SDL_AudioTypeFilters sdl_audio_type_filters[];
 	extern AudioBootStrap audio_driver;
 	/*
 		从SDL_video.h复制而来
@@ -248,7 +342,7 @@ namespace ff{
 
 	#define ALPHA_OPAQUE 255
 	#define ALPHA_TRANSPARENT 0
-
+	
 	/** Evaluates to true if the surface needs to be locked before access */
 	#define MUSTLOCK(surface)	\
 		(surface->offset || \
@@ -470,6 +564,9 @@ namespace ff{
 	int OpenAudio(AudioSpec *desired, AudioSpec *obtained);
 	void CloseAudio(void);
 	void PauseAudio(int pause_on);
+	int BuildAudioCVT(AudioCVT * cvt,
+		AudioFormat src_fmt, Uint8 src_channels, int src_rate,
+		AudioFormat dst_fmt, Uint8 dst_channels, int dst_rate);
 
 	/*
 		SDL Event
@@ -503,6 +600,16 @@ namespace ff{
 		eventaction action, Uint32 mask);
 	void PumpEvents(void);
 	int OutOfMemory();
+	
+	#define SDL_InvalidParamError(param)    CCLog("Parameter '%s' is invalid", (param))
+
 	int CCLog(const char* fmt,...);
+
+	Uint32 SDL_WasInit(Uint32 flags);
+	int SDL_InitSubSystem(Uint32 flags);
+	int SDL_AudioInit(const char *driver_name);
+	void SDL_AudioQuit(void);
+	int SDL_ConvertAudio(AudioCVT * cvt);
+	int SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 }
 #endif

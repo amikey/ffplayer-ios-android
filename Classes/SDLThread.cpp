@@ -82,6 +82,10 @@ namespace ff{
 		delete pthread;
 	}
 
+	threadid_t currentThreadId()
+	{
+		return std::this_thread::get_id();
+	}
 	/*
 		—” ±ms∫¡√Î
 		*/

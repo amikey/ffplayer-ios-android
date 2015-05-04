@@ -132,6 +132,7 @@
     <ClCompile Include="..\Classes\FFVideo.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="..\Classes\SDLAudio.cpp" />
+    <ClCompile Include="..\Classes\SDLAudioTypeCVT.cpp" />
     <ClCompile Include="..\Classes\SDLEvent.cpp" />
     <ClCompile Include="..\Classes\SDLOverlay.cpp" />
     <ClCompile Include="..\Classes\SDLSurface.cpp" />
@@ -139,6 +140,8 @@
     <ClCompile Include="..\Classes\SDLVideo.cpp" />
     <ClCompile Include="..\Classes\SDLWindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SDL.cpp" />
+    <ClCompile Include="SDLAudioCVT.cpp" />
     <ClCompile Include="SDLAudio_mm.cpp" />
   </ItemGroup>
   <ItemGroup>
