@@ -50,16 +50,19 @@
     <ClCompile Include="..\Classes\SDLSurface.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="SDLAudio_mm.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="SDL.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="SDLAudioCVT.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\SDLAudioTypeCVT.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudio_mm.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDLAudioCVT.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDL.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SDL_androidaudio.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
   </ItemGroup>

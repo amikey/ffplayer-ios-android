@@ -211,6 +211,13 @@ namespace ff{
 		WAVEHDR wavebuf[NUM_BUFFERS];       /* Wave audio fragments */
 		int next_buffer;
 	};
+#elif defined(__ANDROID__) || defined(ANDROID)
+	struct PrivateAudioData
+	{
+	};
+#elif defined(__MACH__)
+	//TARGET_OS_MAC ,TARGET_OS_IPHONE ,TARGET_OS_SIMULATOR
+	//iOS
 #endif
 	/* Define the SDL audio driver structure */
 	struct AudioDevice
@@ -611,5 +618,8 @@ namespace ff{
 	void SDL_AudioQuit(void);
 	int SDL_ConvertAudio(AudioCVT * cvt);
 	int SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
+	AudioFormat FirstAudioFormat(AudioFormat format);
+	AudioFormat NextAudioFormat(void);
+	void CalculateAudioSpec(AudioSpec * spec);
 }
 #endif

@@ -6,66 +6,6 @@
 
 namespace ff
 {
-	#define NUM_FORMATS 10
-	static int format_idx;
-	static int format_idx_sub;
-	static AudioFormat format_list[NUM_FORMATS][NUM_FORMATS] = {
-		{ AUDIO_U8, AUDIO_S8, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_U16LSB,
-		AUDIO_U16MSB, AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_F32LSB, AUDIO_F32MSB },
-		{ AUDIO_S8, AUDIO_U8, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_U16LSB,
-		AUDIO_U16MSB, AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_F32LSB, AUDIO_F32MSB },
-		{ AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_U16LSB, AUDIO_U16MSB, AUDIO_S32LSB,
-		AUDIO_S32MSB, AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_S16MSB, AUDIO_S16LSB, AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_S32MSB,
-		AUDIO_S32LSB, AUDIO_F32MSB, AUDIO_F32LSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_U16LSB, AUDIO_U16MSB, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_S32LSB,
-		AUDIO_S32MSB, AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_S16MSB, AUDIO_S16LSB, AUDIO_S32MSB,
-		AUDIO_S32LSB, AUDIO_F32MSB, AUDIO_F32LSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_S16LSB,
-		AUDIO_S16MSB, AUDIO_U16LSB, AUDIO_U16MSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_S32MSB, AUDIO_S32LSB, AUDIO_F32MSB, AUDIO_F32LSB, AUDIO_S16MSB,
-		AUDIO_S16LSB, AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_S16LSB,
-		AUDIO_S16MSB, AUDIO_U16LSB, AUDIO_U16MSB, AUDIO_U8, AUDIO_S8 },
-		{ AUDIO_F32MSB, AUDIO_F32LSB, AUDIO_S32MSB, AUDIO_S32LSB, AUDIO_S16MSB,
-		AUDIO_S16LSB, AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_U8, AUDIO_S8 },
-	};
-
-	void CalculateAudioSpec(AudioSpec * spec)
-	{
-			switch (spec->format) {
-			case AUDIO_U8:
-				spec->silence = 0x80;
-				break;
-			default:
-				spec->silence = 0x00;
-				break;
-			}
-			spec->size = AUDIO_BITSIZE(spec->format) / 8;
-			spec->size *= spec->channels;
-			spec->size *= spec->samples;
-		}
-
-	AudioFormat NextAudioFormat(void)
-	{
-			if ((format_idx == NUM_FORMATS) || (format_idx_sub == NUM_FORMATS)) {
-				return (0);
-			}
-			return (format_list[format_idx][format_idx_sub++]);
-	}
-
-	AudioFormat FirstAudioFormat(AudioFormat format)
-	{
-		for (format_idx = 0; format_idx < NUM_FORMATS; ++format_idx) {
-			if (format_list[format_idx][0] == format) {
-				break;
-			}
-		}
-		format_idx_sub = 0;
-		return (NextAudioFormat());
-	}
-
 	char * WIN_StringToUTF8(TCHAR* tstr)
 	{
 		int len = WideCharToMultiByte(CP_UTF8, 0, tstr, -1, NULL, NULL, NULL, NULL);

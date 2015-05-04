@@ -1,4 +1,6 @@
 #include "SDLImp.h"
+#include <math.h>
+
 /*
 SDL 库的初始化实现
 */

@@ -18,9 +18,16 @@ LOCAL_SRC_FILES := main.cpp \
 				   ../../Classes/SDLSurface.cpp \
 				   ../../Classes/SDLThread.cpp \
 				   ../../Classes/SDLVideo.cpp \
-				   ../../Classes/SDLWindow.cpp
+				   ../../Classes/SDLWindow.cpp \
+				   ../../Classes/SDLAudioTypeCVT.cpp \
+				   ../../Classes/SDLAudioCVT.cpp \
+				   ../../Classes/SDL.cpp \
+				   ../../Classes/SDL_androidaudio.cpp \
+				   SDLAudioJNI.cpp
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes \
+					$(LOCAL_PATH)/. \
+					$(LOCAL_PATH)/../../../cocos2d-x/cocos/platform/android/jni
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
