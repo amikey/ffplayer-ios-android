@@ -195,6 +195,26 @@ namespace ff{
 		int OnlyHasDefaultOutputDevice;
 		int OnlyHasDefaultInputDevice;
 	};
+
+	typedef struct AudioDriver
+	{
+		/* * * */
+		/* The name of this audio driver */
+		const char *name;
+
+		/* * * */
+		/* The description of this audio driver */
+		const char *desc;
+
+		AudioDriverImpl impl;
+
+		char **outputDevices;
+		int outputDeviceCount;
+
+		char **inputDevices;
+		int inputDeviceCount;
+	};
+
 	struct AudioBootStrap
 	{
 		const char *name;
@@ -482,7 +502,7 @@ namespace ff{
 	int PeepEvents(Event *events, int numevents,
 		eventaction action, Uint32 mask);
 	void PumpEvents(void);
-
+	int OutOfMemory();
 	int CCLog(const char* fmt,...);
 }
 #endif

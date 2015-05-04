@@ -32,11 +32,6 @@ namespace ff
 		AUDIO_S16LSB, AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_U8, AUDIO_S8 },
 	};
 
-	static int OutOfMemory()
-	{
-		return 0;
-	}
-
 	void CalculateAudioSpec(AudioSpec * spec)
 	{
 			switch (spec->format) {

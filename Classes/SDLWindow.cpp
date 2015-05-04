@@ -20,4 +20,9 @@ namespace ff{
 	{
 		return "";
 	}
+
+	int OutOfMemory()
+	{
+		return 0;
+	}
 }
