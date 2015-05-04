@@ -73,7 +73,10 @@ namespace ff{
 		if (audioBufferStereo) {
 			audioBufferFrames /= 2;
 		}		
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "OpenAudioDevice done !");
+		if( audioBuffer && audioBufferPinned )
+			__android_log_print(ANDROID_LOG_WARN, "SDL", "OpenAudioDevice done !");
+		else
+			__android_log_print(ANDROID_LOG_WARN, "SDL", "OpenAudioDevice audioBuffer failed !");
 		/*
 		JNIEnv *env = Android_JNI_GetEnv();
 
@@ -131,7 +134,6 @@ namespace ff{
 
 	void * Android_JNI_GetAudioBuffer()
 	{
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "Android_JNI_GetAudioBuffer");
 		return audioBufferPinned;
 	}
 
@@ -139,9 +141,8 @@ namespace ff{
 	{
 		JniMethodInfo t;
 		int nRet=0;
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "Android_JNI_WriteAudioBuffer");
 		if(audioBuffer16Bit){
-			(t.env)->ReleaseShortArrayElements((jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
+			//(t.env)->ReleaseShortArrayElements((jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
 			if (JniHelper::getStaticMethodInfo(t,CLASS_NAME,"audioWriteShortBuffer","([S)V") )
 			{
 				t.env->CallStaticVoidMethod(t.classID,t.methodID);
@@ -150,14 +151,13 @@ namespace ff{
 		}
 		else
 		{
-			(t.env)->ReleaseByteArrayElements((jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
+			//(t.env)->ReleaseByteArrayElements((jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
 			if (JniHelper::getStaticMethodInfo(t,CLASS_NAME,"audioWriteByteBuffer","([B)V"))
 			{
 				t.env->CallStaticVoidMethod(t.classID,t.methodID);
 				t.env->DeleteLocalRef(t.classID);	
 			}				
 		}	
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "Android_JNI_WriteAudioBuffer done");
 		/*
 		JNIEnv *mAudioEnv = Android_JNI_GetEnv();
 
@@ -176,14 +176,12 @@ namespace ff{
 	{
 		JniMethodInfo jmi;
 		int nRet=0;
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "Android_JNI_CloseAudioDevice");
 		if (JniHelper::getStaticMethodInfo(jmi,CLASS_NAME,"audioQuit","()V"))
 		{
 			jmi.env->DeleteLocalRef(jmi.classID);
 			audioBuffer = NULL;
 			audioBufferPinned = NULL;			
 		}		
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "Android_JNI_CloseAudioDevice done");
 		/*
 		JNIEnv *env = Android_JNI_GetEnv();
 
