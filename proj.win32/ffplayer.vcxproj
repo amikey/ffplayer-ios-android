@@ -142,7 +142,6 @@
     <ClCompile Include="..\Classes\SDLThread.cpp" />
     <ClCompile Include="..\Classes\SDLVideo.cpp" />
     <ClCompile Include="..\Classes\SDLWindow.cpp" />
-    <ClCompile Include="..\Classes\SDL_androidaudio.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

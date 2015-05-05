@@ -62,9 +62,6 @@
     <ClCompile Include="..\Classes\SDL.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\SDL_androidaudio.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h">

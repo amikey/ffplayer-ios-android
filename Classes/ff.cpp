@@ -785,6 +785,7 @@ void stream_close(VideoState *is)
 	frame_queue_destory(&is->sampq);
 	frame_queue_destory(&is->subpq);
 	destroyCond(is->continue_read_thread);
+
 #if !CONFIG_AVFILTER
 	sws_freeContext(is->img_convert_ctx);
 #endif

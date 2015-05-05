@@ -95,11 +95,11 @@ def do_build(cocos_root, ndk_root, app_android_root,ndk_build_param,sdk_root,and
     print 'app_android_root= %s' % app_android_root
 	
     if ndk_build_param == None:
-#        command = '%s NDK_DEBUG=1 -j%d -C %s %s' % (ndk_path, num_of_cpu, app_android_root, ndk_module_path)
-		command = '%s -j%d -C %s %s' % (ndk_path, num_of_cpu, app_android_root, ndk_module_path)
+        command = '%s NDK_DEBUG=1 -j%d -C %s %s' % (ndk_path, num_of_cpu, app_android_root, ndk_module_path)
+#		command = '%s -j%d -C %s %s' % (ndk_path, num_of_cpu, app_android_root, ndk_module_path)
     else:
-#        command = '%s NDK_DEBUG=1 -j%d -C %s %s %s' % (ndk_path, num_of_cpu, app_android_root, ''.join(str(e) for e in ndk_build_param), ndk_module_path)
-		command = '%s -j%d -C %s %s %s' % (ndk_path, num_of_cpu, app_android_root, ''.join(str(e) for e in ndk_build_param), ndk_module_path)
+        command = '%s NDK_DEBUG=1 -j%d -C %s %s %s' % (ndk_path, num_of_cpu, app_android_root, ''.join(str(e) for e in ndk_build_param), ndk_module_path)
+#		command = '%s -j%d -C %s %s %s' % (ndk_path, num_of_cpu, app_android_root, ''.join(str(e) for e in ndk_build_param), ndk_module_path)
     print '========================================'     
     print 'command=: %s' % command
     print '========================================' 
