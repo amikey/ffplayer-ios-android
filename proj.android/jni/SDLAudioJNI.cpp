@@ -13,62 +13,72 @@ namespace ff{
 	static jclass mActivityClass;
 	
 	/* method signatures */
-	static jmethodID midAudioInit;
-	static jmethodID midAudioWriteShortBuffer;
-	static jmethodID midAudioWriteByteBuffer;
-	static jmethodID midAudioQuit;
-	static bool bHasNewData;
+//	static jmethodID midAudioInit;
+//	static jmethodID midAudioWriteShortBuffer;
+//	static jmethodID midAudioWriteByteBuffer;
+//	static jmethodID midAudioQuit;
+//	static bool bHasNewData;
 	
 	static jboolean audioBuffer16Bit = JNI_FALSE;
 	static jboolean audioBufferStereo = JNI_FALSE;
-	static jobject audioBuffer = NULL;
-	static void* audioBufferPinned = NULL;
+	static jobject audioBuffer = nullptr;
+	static void* audioBufferPinned = nullptr;
 
+	static JniMethodInfo jim_audioInit;
+	static JniMethodInfo jim_audioWriteShortBuffer;
+	static JniMethodInfo jim_audioWriteByteBuffer;
+	static JniMethodInfo jim_audioQuit;
+	
 	int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames)
 	{
 		
 		int audioBufferFrames;
-		JniMethodInfo t;
+		JNIEnv *env = JniHelper::getEnv();
 		
 		__android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
+	
+		if( !(JniHelper::getStaticMethodInfo(jim_audioInit,CLASS_NAME,"audioInit", "(IZZI)I") &&
+			JniHelper::getStaticMethodInfo(jim_audioWriteShortBuffer,CLASS_NAME,"audioWriteShortBuffer", "([S)V") &&
+			JniHelper::getStaticMethodInfo(jim_audioWriteByteBuffer,CLASS_NAME,"audioWriteByteBuffer", "([B)V") &&
+			JniHelper::getStaticMethodInfo(jim_audioQuit,CLASS_NAME,"audioQuit", "()V")))
+		{
+			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on JniHelper::getStaticMethodInfo!");
+			return 0;
+		}
 		
 		audioBuffer16Bit = is16Bit;
 		audioBufferStereo = channelCount > 1;
-		if (JniHelper::getStaticMethodInfo(t, CLASS_NAME, "audioInit", "(IZZI)I"))
+		if(jim_audioInit.env->CallStaticIntMethod(jim_audioInit.classID,jim_audioInit.methodID,sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames)!=0)
 		{
-			if(t.env->CallStaticIntMethod(t.classID,t.methodID,sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames)!=0)
-			{
-				__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioTrack initialization!");
-				t.env->DeleteLocalRef(t.classID);
-				return 0;
-			}
-			t.env->DeleteLocalRef(t.classID);
+			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioTrack initialization!");
+			jim_audioInit.env->DeleteLocalRef(jim_audioInit.classID);
+			return 0;
 		}
 		if (is16Bit) {
-			jshortArray audioBufferLocal = t.env->NewShortArray(desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+			jshortArray audioBufferLocal = env->NewShortArray(desiredBufferFrames * (audioBufferStereo ? 2 : 1));
 			if (audioBufferLocal) {
-				audioBuffer = t.env->NewGlobalRef(audioBufferLocal);
-				t.env->DeleteLocalRef(audioBufferLocal);
+				audioBuffer = env->NewGlobalRef(audioBufferLocal);
+				env->DeleteLocalRef(audioBufferLocal);
 			}
 		}
 		else {
-			jbyteArray audioBufferLocal = (t.env)->NewByteArray(desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+			jbyteArray audioBufferLocal = env->NewByteArray(desiredBufferFrames * (audioBufferStereo ? 2 : 1));
 			if (audioBufferLocal) {
-				audioBuffer = (t.env)->NewGlobalRef(audioBufferLocal);
-				t.env->DeleteLocalRef(audioBufferLocal);
+				audioBuffer = env->NewGlobalRef(audioBufferLocal);
+				env->DeleteLocalRef(audioBufferLocal);
 			}
 		}		
-		if (audioBuffer == NULL) {
+		if (audioBuffer == nullptr) {
 			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: could not allocate an audio buffer!");
 			return 0;
 		}		
 		jboolean isCopy = JNI_FALSE;
 		if (audioBuffer16Bit) {
-			audioBufferPinned = t.env->GetShortArrayElements((jshortArray)audioBuffer, &isCopy);
-			audioBufferFrames = t.env->GetArrayLength((jshortArray)audioBuffer);
+			audioBufferPinned = env->GetShortArrayElements((jshortArray)audioBuffer, &isCopy);
+			audioBufferFrames = env->GetArrayLength((jshortArray)audioBuffer);
 		} else {
-			audioBufferPinned = t.env->GetByteArrayElements((jbyteArray)audioBuffer, &isCopy);
-			audioBufferFrames = t.env->GetArrayLength((jbyteArray)audioBuffer);
+			audioBufferPinned = env->GetByteArrayElements((jbyteArray)audioBuffer, &isCopy);
+			audioBufferFrames = env->GetArrayLength((jbyteArray)audioBuffer);
 		}
 		if (audioBufferStereo) {
 			audioBufferFrames /= 2;
@@ -139,24 +149,15 @@ namespace ff{
 
 	void Android_JNI_WriteAudioBuffer()
 	{
-		JniMethodInfo t;
-		int nRet=0;
+		JNIEnv *env = JniHelper::getEnv();
 		if(audioBuffer16Bit){
-			//(t.env)->ReleaseShortArrayElements((jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
-			if (JniHelper::getStaticMethodInfo(t,CLASS_NAME,"audioWriteShortBuffer","([S)V") )
-			{
-				t.env->CallStaticVoidMethod(t.classID,t.methodID);
-				t.env->DeleteLocalRef(t.classID);	
-			}		
+			env->ReleaseShortArrayElements((jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
+			env->CallStaticVoidMethod(jim_audioWriteShortBuffer.classID,jim_audioWriteShortBuffer.methodID, (jshortArray)audioBuffer);
 		}
 		else
 		{
-			//(t.env)->ReleaseByteArrayElements((jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
-			if (JniHelper::getStaticMethodInfo(t,CLASS_NAME,"audioWriteByteBuffer","([B)V"))
-			{
-				t.env->CallStaticVoidMethod(t.classID,t.methodID);
-				t.env->DeleteLocalRef(t.classID);	
-			}				
+			env->ReleaseByteArrayElements((jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
+			env->CallStaticVoidMethod(jim_audioWriteByteBuffer.classID,jim_audioWriteByteBuffer.methodID, (jbyteArray)audioBuffer);
 		}	
 		/*
 		JNIEnv *mAudioEnv = Android_JNI_GetEnv();
@@ -174,14 +175,21 @@ namespace ff{
 
 	void Android_JNI_CloseAudioDevice()
 	{
-		JniMethodInfo jmi;
-		int nRet=0;
-		if (JniHelper::getStaticMethodInfo(jmi,CLASS_NAME,"audioQuit","()V"))
+		JNIEnv *env = JniHelper::getEnv();
+		
+		env->CallStaticVoidMethod(jim_audioQuit.classID,jim_audioQuit.methodID);
+		
+		env->DeleteLocalRef(jim_audioInit.classID);
+		env->DeleteLocalRef(jim_audioWriteShortBuffer.classID);
+		env->DeleteLocalRef(jim_audioWriteByteBuffer.classID);
+		env->DeleteLocalRef(jim_audioQuit.classID);
+		
+		if( audioBuffer )
 		{
-			jmi.env->DeleteLocalRef(jmi.classID);
-			audioBuffer = NULL;
-			audioBufferPinned = NULL;			
-		}		
+			env->DeleteGlobalRef(audioBuffer);
+			audioBuffer = nullptr;
+			audioBufferPinned = nullptr;
+		}
 		/*
 		JNIEnv *env = Android_JNI_GetEnv();
 
