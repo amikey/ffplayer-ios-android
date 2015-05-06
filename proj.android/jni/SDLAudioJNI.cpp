@@ -177,18 +177,13 @@ namespace ff{
 	{
 		JNIEnv *env = JniHelper::getEnv();
 		
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: 1 ");
-		
+		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: close audio device!");
 		env->CallStaticVoidMethod(jim_audioQuit.classID,jim_audioQuit.methodID);
-		
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: 2 ");
 		
 		env->DeleteLocalRef(jim_audioInit.classID);
 		env->DeleteLocalRef(jim_audioWriteShortBuffer.classID);
 		env->DeleteLocalRef(jim_audioWriteByteBuffer.classID);
 		env->DeleteLocalRef(jim_audioQuit.classID);
-		
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: 3 ");
 		
 		if( audioBuffer )
 		{
@@ -196,7 +191,7 @@ namespace ff{
 			audioBuffer = nullptr;
 			audioBufferPinned = nullptr;
 		}
-		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: close audio device!");
+		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: close audio device done!");
 		/*
 		JNIEnv *env = Android_JNI_GetEnv();
 
