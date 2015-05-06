@@ -142,14 +142,14 @@ void CCFFmpegNode::updateTexture(float dt)
 			_bar->setPercent(100 * _video.cur() / _video.length());
 	}
 	//打印状态
-	
+	/*
 	CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s ,preload %d)", _video.cur(), _video.length(),
 		_video.isPlaying() ? "true" : "false",
 		_video.isEnd() ? "true" : "false",
 		_video.hasVideo() ? "true" : "false",
 		_video.hasAudio() ? "true" : "false",
 		_video.preload_packet_nb());
-	
+	*/
 
 	//结束播放下一首
 	if (_video.isEnd() || _video.isError())
