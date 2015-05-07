@@ -20,7 +20,7 @@
 */
 
 
-//#if defined(__ANDROID__) || defined(ANDROID)
+#if defined(__ANDROID__) || defined(ANDROID)
 #include "SDLImp.h"
 #include "SDLAudioJNI.h"
 
@@ -129,7 +129,7 @@ namespace ff
 		"android", "SDL Android audio driver", AndroidAUD_Init, 0
 	};
 }
-//#endif /* SDL_AUDIO_DRIVER_ANDROID */
+#endif /* SDL_AUDIO_DRIVER_ANDROID */
 
 /* vi: set ts=4 sw=4 expandtab: */
 
