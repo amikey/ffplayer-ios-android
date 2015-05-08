@@ -12,6 +12,10 @@
 	<dict>
 		<key>5755BBEEBB232C5B9FF0B93914351976CCBFE231</key>
 		<string>https://github.com/JohnCrash/ffplayer.git</string>
+		<key>852ED3691A47A99B0D19C820A500AE9772B2A44E</key>
+		<string>https://github.com/JohnCrash/cocos2d-x-EDU-Version.git</string>
+		<key>8CEE2920F82777E0800DD1AD4CACD1E31E585E07</key>
+		<string>https://github.com/FFmpeg/FFmpeg.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>proj.ios/ffplayer.xcodeproj</string>
@@ -19,6 +23,10 @@
 	<dict>
 		<key>5755BBEEBB232C5B9FF0B93914351976CCBFE231</key>
 		<string>../../..</string>
+		<key>852ED3691A47A99B0D19C820A500AE9772B2A44E</key>
+		<string>../../../../cocos2d-x</string>
+		<key>8CEE2920F82777E0800DD1AD4CACD1E31E585E07</key>
+		<string>../../../../ffmpeg-lf</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/JohnCrash/ffplayer.git</string>
@@ -28,6 +36,22 @@
 	<string>5755BBEEBB232C5B9FF0B93914351976CCBFE231</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>852ED3691A47A99B0D19C820A500AE9772B2A44E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>cocos2d-x</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>8CEE2920F82777E0800DD1AD4CACD1E31E585E07</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ffmpeg-lf</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
