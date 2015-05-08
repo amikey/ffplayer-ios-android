@@ -1,5 +1,7 @@
 #include "SDLImp.h"
-
+#ifdef WIN32
+#include <ctype.h>
+#endif
 /*
 	SDL 库的初始化实现
 */
