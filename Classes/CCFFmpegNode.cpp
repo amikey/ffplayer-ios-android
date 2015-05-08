@@ -123,7 +123,7 @@ void CCFFmpegNode::updateTexture(float dt)
 				//"slider_bar_active_9patch.png"
 				_bar = ui::LoadingBar::create("sliderProgress.png");
 				_bar->setAnchorPoint(Vec2(0, 0));
-				_bar->setScale9Enabled(true);
+				//_bar->setScale9Enabled(true);
 				_bar->setCapInsets(Rect(4,4,250-8,13-8));
 				//_bar->setDirection(ui::LoadingBar::Direction::RIGHT);
 				_bar->setPosition(Vec2(_play->getContentSize().width, 24));
