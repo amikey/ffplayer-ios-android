@@ -1,8 +1,7 @@
 #!/bin/bash
 SDKVERSION="8.1"
 
-#ARCHS="armv7 armv7s i386"
-ARCHS="armv64"
+ARCHS="armv7 armv7s arm64 i386"
 
 DEVELOPER=`xcode-select -print-path`
 
@@ -26,13 +25,9 @@ EXTRA_CFLAGS="-arch i386"
 EXTRA_LDFLAGS="-arch i386 -I${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk/usr/lib"
 else
 PLATFORM="iPhoneOS"
-EXTRA_CONFIG="--arch=${ARCH} --target-os=darwin --enable-cross-compile --cpu=cortex-a9 --disable-armv5te"
+EXTRA_CONFIG="--arch=${ARCH} --target-os=darwin --enable-cross-compile"
 EXTRA_CFLAGS="-w -arch ${ARCH}"
 EXTRA_LDFLAGS="-arch ${ARCH}"
-if [ "$ARCH}" == "arm64" ]
-then
-	EXPORT="GASPP_FIX_XCODE5=1"
-fi
 fi
 
 mkdir -p "${INTERDIR}/${ARCH}"
@@ -94,7 +89,7 @@ for file in *.a
 do
 
 cd ${INTERDIR}
-xcrun -sdk iphoneos lipo -output universal/lib/$file  -create -arch armv7 armv7/lib/$file -arch armv7s armv7s/lib/$file -arch i386 i386/lib/$file
+xcrun -sdk iphoneos lipo -output universal/lib/$file  -create -arch armv7 armv7/lib/$file -arch armv7s armv7s/lib/$file -arch i386 i386/lib/$file -arch arm64 arm64/lib/$file
 echo "Universal $file created."
 
 done
