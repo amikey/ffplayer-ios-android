@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>5F2A4FCE-7DF2-46E9-8CE7-7CEC2E95B52E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ffplayer</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>5755BBEEBB232C5B9FF0B93914351976CCBFE231</key>
+		<string>https://github.com/JohnCrash/ffplayer.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>proj.ios/ffplayer.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>5755BBEEBB232C5B9FF0B93914351976CCBFE231</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/JohnCrash/ffplayer.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>5755BBEEBB232C5B9FF0B93914351976CCBFE231</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>5755BBEEBB232C5B9FF0B93914351976CCBFE231</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ffplayer</string>
+		</dict>
+	</array>
+</dict>
+</plist>
