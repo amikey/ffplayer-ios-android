@@ -115,7 +115,7 @@ void CCFFmpegNode::updateTexture(float dt)
 				_play->setPosition(Vec2(0, 0));
 				_play->addTouchEventListener(CC_CALLBACK_2(CCFFmpegNode::onPlay,this));
 				addChild(_play);
-				_view->setPosition(Vec2(0, 24));
+				//_view->setPosition(Vec2(0, 24));
 			}
 			//加入一个进度条
 			if (!_bar)
