@@ -801,6 +801,7 @@ namespace ff{
 #define SDL_AUDIO_DRIVER_ANDROID 1
 #else
 	//iOS
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
 #endif
 
 	static const AudioBootStrap *const bootstrap[] = {

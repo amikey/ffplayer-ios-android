@@ -83,6 +83,8 @@
 		525DBDCC1AFC6F23001D2C79 /* pausebutton.png in Resources */ = {isa = PBXBuildFile; fileRef = 525DBDC41AFC6F23001D2C79 /* pausebutton.png */; };
 		525DBDCD1AFC6F23001D2C79 /* playbuttonb.png in Resources */ = {isa = PBXBuildFile; fileRef = 525DBDC51AFC6F23001D2C79 /* playbuttonb.png */; };
 		525DBDCE1AFC6F23001D2C79 /* sliderProgress.png in Resources */ = {isa = PBXBuildFile; fileRef = 525DBDC61AFC6F23001D2C79 /* sliderProgress.png */; };
+		525DBDD11AFC8389001D2C79 /* SDL_coreaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 525DBDCF1AFC8389001D2C79 /* SDL_coreaudio.cpp */; };
+		525DBDD31AFC8471001D2C79 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525DBDD21AFC8471001D2C79 /* CoreAudio.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -276,6 +278,8 @@
 		525DBDC41AFC6F23001D2C79 /* pausebutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = pausebutton.png; path = ../Resources/pausebutton.png; sourceTree = "<group>"; };
 		525DBDC51AFC6F23001D2C79 /* playbuttonb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = playbuttonb.png; path = ../Resources/playbuttonb.png; sourceTree = "<group>"; };
 		525DBDC61AFC6F23001D2C79 /* sliderProgress.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sliderProgress.png; path = ../Resources/sliderProgress.png; sourceTree = "<group>"; };
+		525DBDCF1AFC8389001D2C79 /* SDL_coreaudio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SDL_coreaudio.cpp; path = ../Classes/SDL_coreaudio.cpp; sourceTree = "<group>"; };
+		525DBDD21AFC8471001D2C79 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,6 +287,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				525DBDD31AFC8471001D2C79 /* CoreAudio.framework in Frameworks */,
 				525DBDB21AFC6E8F001D2C79 /* CoreMotion.framework in Frameworks */,
 				525DBDB01AFC6DFF001D2C79 /* CoreMedia.framework in Frameworks */,
 				525DBDAC1AFC6CDA001D2C79 /* libgif ios.a in Frameworks */,
@@ -383,6 +388,7 @@
 		525DBD051AFC53C0001D2C79 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				525DBDCF1AFC8389001D2C79 /* SDL_coreaudio.cpp */,
 				525DBD061AFC53D6001D2C79 /* AppDelegate.cpp */,
 				525DBD071AFC53D6001D2C79 /* AppDelegate.h */,
 				525DBD081AFC53D6001D2C79 /* AppMacros.h */,
@@ -429,6 +435,7 @@
 		525DBD9F1AFC6C92001D2C79 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				525DBDD21AFC8471001D2C79 /* CoreAudio.framework */,
 				525DBDAF1AFC6DFE001D2C79 /* CoreMedia.framework */,
 				525DBDB11AFC6E8F001D2C79 /* CoreMotion.framework */,
 				525DBD401AFC5B4C001D2C79 /* UIKit.framework */,
@@ -684,6 +691,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				525DBD2F1AFC53D6001D2C79 /* SDLSurface.cpp in Sources */,
+				525DBDD11AFC8389001D2C79 /* SDL_coreaudio.cpp in Sources */,
 				525DBD231AFC53D6001D2C79 /* ff.cpp in Sources */,
 				525DBD251AFC53D6001D2C79 /* FFVideo.cpp in Sources */,
 				525DBD2D1AFC53D6001D2C79 /* SDLEvent.cpp in Sources */,

@@ -199,30 +199,8 @@ namespace ff{
 		AudioCallback callback;
 		void *userdata;
 	};
-#ifdef WIN32
-#include <Windows.h>
-#include <mmsystem.h>
 
-	struct PrivateAudioData
-	{
-		HWAVEOUT hout;
-		HWAVEIN hin;
-		HANDLE audio_sem;
-		Uint8 *mixbuf;              /* The raw allocated mixing buffer */
-		WAVEHDR wavebuf[NUM_BUFFERS];       /* Wave audio fragments */
-		int next_buffer;
-	};
-#elif defined(__ANDROID__) || defined(ANDROID)
-	struct PrivateAudioData
-	{
-	};
-#elif defined(__MACH__)
-	//TARGET_OS_MAC ,TARGET_OS_IPHONE ,TARGET_OS_SIMULATOR
-	//iOS
-    struct PrivateAudioData
-    {
-    };    
-#endif
+    struct PrivateAudioData;
 	/* Define the SDL audio driver structure */
 	struct AudioDevice
 	{

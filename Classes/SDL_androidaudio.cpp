@@ -27,7 +27,9 @@
 namespace ff
 {
 	static void * audioDevice;
-
+    struct PrivateAudioData
+    {
+    };
 	static int
 		AndroidAUD_OpenDevice(AudioDevice *_this, const char *devname, int iscapture)
 	{

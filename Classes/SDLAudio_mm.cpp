@@ -3,9 +3,21 @@
 	windows使用mmsystem为SDL实现的驱动
 */
 #include "SDLImp.h"
+#include <Windows.h>
+#include <mmsystem.h>
 
 namespace ff
 {
+    struct PrivateAudioData
+    {
+        HWAVEOUT hout;
+        HWAVEIN hin;
+        HANDLE audio_sem;
+        Uint8 *mixbuf;              /* The raw allocated mixing buffer */
+        WAVEHDR wavebuf[NUM_BUFFERS];       /* Wave audio fragments */
+        int next_buffer;
+    };
+    
 	char * WIN_StringToUTF8(TCHAR* tstr)
 	{
 		int len = WideCharToMultiByte(CP_UTF8, 0, tstr, -1, NULL, NULL, NULL, NULL);
