@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include <stdlib.h>
 
 namespace ff{
 	#define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
@@ -218,6 +219,9 @@ namespace ff{
 #elif defined(__MACH__)
 	//TARGET_OS_MAC ,TARGET_OS_IPHONE ,TARGET_OS_SIMULATOR
 	//iOS
+    struct PrivateAudioData
+    {
+    };    
 #endif
 	/* Define the SDL audio driver structure */
 	struct AudioDevice

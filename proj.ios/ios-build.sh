@@ -1,7 +1,7 @@
 #!/bin/bash
-SDKVERSION="7.1"
+SDKVERSION="8.1"
 
-ARCHS="armv7 armv7s i386"
+ARCHS="armv7 armv7s arm64 i386"
 
 DEVELOPER=`xcode-select -print-path`
 
@@ -22,16 +22,23 @@ then
 PLATFORM="iPhoneSimulator"
 EXTRA_CONFIG="--arch=i386 --disable-asm --enable-cross-compile --target-os=darwin --cpu=i386"
 EXTRA_CFLAGS="-arch i386"
-EXTRA_LDFLAGS="-I${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk/usr/lib"
+EXTRA_LDFLAGS="-arch i386 -I${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk/usr/lib"
 else
 PLATFORM="iPhoneOS"
-EXTRA_CONFIG="--arch=arm --target-os=darwin --enable-cross-compile --cpu=cortex-a9 --disable-armv5te"
+EXTRA_CONFIG="--arch=${ARCH} --target-os=darwin --enable-cross-compile"
 EXTRA_CFLAGS="-w -arch ${ARCH}"
+EXTRA_LDFLAGS="-arch ${ARCH}"
 fi
 
 mkdir -p "${INTERDIR}/${ARCH}"
 
+echo "==========================================================="
+echo " configure "${ARCH}
+echo "${INTERDIR}/${ARCH}"
+echo "==========================================================="
+
 ./configure --prefix="${INTERDIR}/${ARCH}" \
+    --disable-yasm \
     --disable-neon \
     --disable-armv6 \
     --disable-armv6t2 \
@@ -42,15 +49,36 @@ mkdir -p "${INTERDIR}/${ARCH}"
     --disable-iconv \
     --disable-bzlib \
     --enable-avresample \
+    --disable-shared \
+    --enable-static \
+    --enable-protocol=http \
     --sysroot="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk" \
     --cc="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang" \
-    --as='/usr/local/bin/gas-preprocessor.pl' \
     --extra-cflags="${EXTRA_CFLAGS} -miphoneos-version-min=${SDKVERSION}" \
-    --extra-ldflags="-arch ${ARCH} ${EXTRA_LDFLAGS} -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk -miphoneos-version-min=${SDKVERSION}" ${EXTRA_CONFIG} \
+    --extra-ldflags="${EXTRA_LDFLAGS} -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk -miphoneos-version-min=${SDKVERSION}" ${EXTRA_CONFIG} \
     --enable-pic \
     --extra-cxxflags="$CPPFLAGS -isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 
-make && make install && make clean
+echo "==========================================================="
+echo " make "${ARCH}
+echo "${INTERDIR}/${ARCH}"
+echo "==========================================================="
+
+make
+
+echo "==========================================================="
+echo " install "${ARCH}
+echo "${INTERDIR}/${ARCH}"
+echo "==========================================================="
+
+make install 
+
+echo "==========================================================="
+echo " clean "${ARCH}
+echo "${INTERDIR}/${ARCH}"
+echo "==========================================================="
+
+make clean
 
 done
 
@@ -61,7 +89,7 @@ for file in *.a
 do
 
 cd ${INTERDIR}
-xcrun -sdk iphoneos lipo -output universal/lib/$file  -create -arch armv7 armv7/lib/$file -arch armv7s armv7s/lib/$file -arch i386 i386/lib/$file
+xcrun -sdk iphoneos lipo -output universal/lib/$file  -create -arch armv7 armv7/lib/$file -arch armv7s armv7s/lib/$file -arch i386 i386/lib/$file -arch arm64 arm64/lib/$file
 echo "Universal $file created."
 
 done
