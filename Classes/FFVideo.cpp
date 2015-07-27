@@ -138,7 +138,7 @@ namespace ff
 		return  (_vs && (_vs->audio_st || _vs->video_st));
 	}
 
-	int FFVideo::width() const
+	int FFVideo::codec_width() const
 	{
 		if (!isOpen())return -1;
 		VideoState* _vs = (VideoState*)_ctx;
@@ -147,13 +147,29 @@ namespace ff
 		return _vs->video_st->codec->width;
 	}
 
-	int FFVideo::height() const
+	int FFVideo::codec_height() const
 	{
 		if (!isOpen())return -1;
 		VideoState* _vs = (VideoState*)_ctx;
 		if (!_vs->video_st)return -1;
 		if (!_vs->video_st->codec)return -1;
 		return _vs->video_st->codec->height;
+	}
+
+	int FFVideo::width() const
+	{
+		if (!isOpen())return -1;
+		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->pscreen)return -1;
+		return _vs->pscreen->w;
+	}
+
+	int FFVideo::height() const
+	{
+		if (!isOpen())return -1;
+		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->pscreen)return -1;
+		return _vs->pscreen->h;
 	}
 
 	void *FFVideo::refresh() const

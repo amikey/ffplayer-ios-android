@@ -30,7 +30,8 @@ namespace ff
 		void close(); //关闭视频，并释放内存
 		int width() const; //视频的宽度
 		int height() const; //视频的高度
-
+		int codec_width() const; //解码器视频的宽度
+		int codec_height() const; //解码器视频的高度
 		/*
 			刷新,播放程序需要以一定的帧率调用该函数。比如1/30s
 			函数成功返回一个RGB raw指针，格式为Texture2D::PixelFormat::RGB888
