@@ -142,6 +142,7 @@ namespace ff
 	{
 		if (!isOpen())return -1;
 		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->video_st)return -1;
 		if (!_vs->video_st->codec)return -1;
 		return _vs->video_st->codec->width;
 	}
@@ -150,6 +151,7 @@ namespace ff
 	{
 		if (!isOpen())return -1;
 		VideoState* _vs = (VideoState*)_ctx;
+		if (!_vs->video_st)return -1;
 		if (!_vs->video_st->codec)return -1;
 		return _vs->video_st->codec->height;
 	}

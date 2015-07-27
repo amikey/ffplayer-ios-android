@@ -65,7 +65,7 @@ void static My_log(void* p,int inval,const char* fmt,...)
 	va_start(args, fmt);
 	vsnprintf(buf, 1024 - 3, fmt, args);
 	va_end(args);
-	CCLog("%s",buf);
+	CCLog(buf);
 }
 
 static inline
@@ -460,6 +460,8 @@ static Frame *frame_queue_peek_readable(FrameQueue *f)
 	while (f->size - f->rindex_shown <= 0 &&
 		!f->pktq->abort_request) {
 		//waitCond(f->cond, f->mutex);
+		if (f->eof)
+			return NULL;
 		f->cond->wait(lk);
 	}
 	//unlockMutex(f->mutex);
@@ -646,6 +648,7 @@ static int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int 
 		return AVERROR(ENOMEM);
 	if (!(f->cond = createCond()))
 		return AVERROR(ENOMEM);
+	f->eof = 0;
 	f->pktq = pktq;
 	f->max_size = FFMIN(max_size, FRAME_QUEUE_SIZE);
 	f->keep_last = !!keep_last;
@@ -719,6 +722,7 @@ static void packet_queue_init(PacketQueue *q)
 	q->mutex = createMutex();
 	q->cond = createCond();
 	q->abort_request = 1;
+	q->eof = 0;
 }
 
 static void packet_queue_flush(PacketQueue *q)
@@ -859,7 +863,13 @@ static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block, int *seria
 		}
 		else {
 			//waitCond(q->cond, q->mutex);
-			q->cond->wait(lk);
+			if (!q->eof)
+				q->cond->wait(lk);
+			else
+			{
+				ret = -1;
+				break;
+			}
 		}
 	}
 	//unlockMutex(q->mutex);
@@ -1144,6 +1154,144 @@ static void sdl_audio_callback(void *opaque, Uint8 *stream, int len)
 	}
 }
 
+typedef void(*AudioCallBack)(void *opaque, Uint8 *stream, int len);
+struct AudioChanel
+{
+	VideoState * _is;
+	AudioCallBack _callback;
+	AudioChanel(VideoState * is, AudioCallBack cb) :_is(is), _callback(cb)
+	{}
+};
+#define MAXCHANEL 16
+static AudioChanel* mxAudioChanel[MAXCHANEL];
+static AudioChanel* OpenAudioChanel(VideoState *is, AudioCallBack pcallback)
+{
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		if (!mxAudioChanel[i])
+		{
+			AudioChanel * pac = new AudioChanel(is, pcallback);
+			mxAudioChanel[i] = pac;
+			return pac;
+		}
+	}
+	return nullptr;
+}
+
+static void CloseAudioChanel(AudioChanel *pac)
+{
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		if (mxAudioChanel[i] == pac)
+		{
+			mxAudioChanel[i] = nullptr;
+			delete pac;
+			return;
+		}
+	}
+}
+
+static int getAudioChanelCount()
+{
+	int count = 0;
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		if (mxAudioChanel[i])
+			count++;
+	}
+	return count;
+}
+const int max_audioval = ((1 << (16 - 1)) - 1);
+const int min_audioval = -(1 << (16 - 1));
+int clamp(int d,int mi,int ma)
+{
+	if (d>ma)
+		return ma;
+	if (d < mi)
+		return mi;
+	return d;
+}
+
+static void MixAudioFormat(Sint16 *des, Sint16 *src, AudioFormat format,int len,float volume)
+{
+	Sint16 A, B;
+	while (len--){
+		A = *(src++);
+		B = *des;
+		*des = (Sint16)clamp((int)A + (int)B, min_audioval, max_audioval);
+		des++;
+	}
+}
+
+static void sdl_mx_audio_callback(void *pd, Uint8 *stream, int len)
+{
+	AudioFormat format = AUDIO_S16SYS;
+	memset(stream, 0, len);
+	Uint8 * mixData = new Uint8[len];
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		AudioChanel * pac = mxAudioChanel[i];
+		if (pac)
+		{
+			pac->_callback(pac->_is, mixData, len);
+			//SDL_MixAudioFormat(stream, mixData, format,len, 128);
+			MixAudioFormat((Sint16*)stream, (Sint16*)mixData, format, len / 2, 128);
+		}
+	}
+	delete [] mixData;
+}
+
+static bool gInitAudio = false;
+static AudioSpec gSpec;
+static int initAudio(AudioSpec *desired, AudioSpec *obtained)
+{
+	int ret = 0;
+	if (!OpenAudioChanel((VideoState *)desired->userdata, desired->callback))
+		return -1;
+	if (!gInitAudio)
+	{
+		desired->callback = sdl_mx_audio_callback;
+		ret = OpenAudio(desired, &gSpec);
+		if (gSpec.format != AUDIO_S16SYS)
+		{
+			My_log(NULL, AV_LOG_ERROR, "Close audio device!\n");
+			CloseAudio();
+			return -1;
+		}
+		if ( ret >= 0 )
+			PauseAudio(0);
+		gInitAudio = true;
+	}
+	*obtained = gSpec;
+	return ret;
+}
+
+static void CloseAudioChanelByVideoState(VideoState *pvs)
+{
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		AudioChanel * pac = mxAudioChanel[i];
+		if (pac && pac->_is == pvs)
+		{
+			mxAudioChanel[i] = nullptr;
+			delete pac;
+			break;
+		}
+	}
+	/*
+		在全部的声音混合通道关闭后，关闭声音设备
+		这也许导致频繁的打开关闭声音设备导致电噪音
+	*/
+	for (int i = 0; i < MAXCHANEL; i++)
+	{
+		if (mxAudioChanel[i])
+			return;
+	}
+	//all audio chanel is close.
+	CloseAudio();
+	gInitAudio = false;
+}
+
 static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params)
 {
 	AudioSpec wanted_spec, spec;
@@ -1175,7 +1323,7 @@ static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb
 	wanted_spec.samples = FFMAX(AUDIO_MIN_BUFFER_SIZE, 2 << av_log2(wanted_spec.freq / AUDIO_MAX_CALLBACKS_PER_SEC));
 	wanted_spec.callback = sdl_audio_callback;
 	wanted_spec.userdata = opaque;
-	while (OpenAudio(&wanted_spec, &spec) < 0) {
+	while (initAudio(&wanted_spec, &spec) < 0) {
 		My_log(NULL, AV_LOG_WARNING, "OpenAudio (%d channels, %d Hz): %s\n",
 			wanted_spec.channels, wanted_spec.freq, GetError());
 		wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
@@ -1185,6 +1333,7 @@ static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb
 			if (!wanted_spec.freq) {
 				My_log(NULL, AV_LOG_ERROR,
 					"No more combinations to try, audio open failed\n");
+				CloseAudio();
 				return -1;
 			}
 		}
@@ -1193,6 +1342,7 @@ static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb
 	if (spec.format != AUDIO_S16SYS) {
 		My_log(NULL, AV_LOG_ERROR,
 			"SDL advised audio format %d is not supported!\n", spec.format);
+		CloseAudio();
 		return -1;
 	}
 	if (spec.channels != wanted_spec.channels) {
@@ -1200,6 +1350,7 @@ static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb
 		if (!wanted_channel_layout) {
 			My_log(NULL, AV_LOG_ERROR,
 				"SDL advised channel count %d is not supported!\n", spec.channels);
+			CloseAudio();
 			return -1;
 		}
 	}
@@ -1212,6 +1363,7 @@ static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb
 	audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
 	if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
 		My_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+		CloseAudio();
 		return -1;
 	}
 	return spec.size;
@@ -1229,7 +1381,8 @@ static void stream_component_close(VideoState *is, int stream_index)
 	switch (avctx->codec_type) {
 	case AVMEDIA_TYPE_AUDIO:
 		decoder_abort(&is->auddec, &is->sampq);
-		CloseAudio();
+		CloseAudioChanelByVideoState(is);
+		//CloseAudio();
 		decoder_destroy(&is->auddec);
 		swr_free(&is->swr_ctx);
 		av_freep(&is->audio_buf1);
@@ -2002,8 +2155,20 @@ static int audio_thread(void *arg){
 
 	do {
 		if ((got_frame = decoder_decode_frame(&is->auddec, frame, NULL)) < 0)
+		{
+			if (is->audioq.eof)
+			{
+				if (is->auddec.queue->abort_request)
+				{
+					goto the_end;
+				}
+				is->sampq.eof = 1;
+				Delay(10);
+				continue;
+			}
 			goto the_end;
-
+		}
+		is->sampq.eof = 0;
 		if (got_frame) {
 			//tb = (AVRational){ 1, frame->sample_rate };
 			tb.num = 1;
@@ -2073,6 +2238,7 @@ the_end:
 	avfilter_graph_free(&is->agraph);
 #endif
 	av_frame_free(&frame);
+	is->sampq.eof = 1;
 	return ret;
 }
 
@@ -2440,7 +2606,7 @@ static int stream_component_open(VideoState *is, int stream_index)
 			is->auddec.start_pts_tb = is->audio_st->time_base;
 		}
 		decoder_start(&is->auddec, audio_thread, is);
-		PauseAudio(0);
+		//PauseAudio(0);
 		break;
 	case AVMEDIA_TYPE_VIDEO:
 		is->video_stream = stream_index;
@@ -2529,7 +2695,9 @@ static int read_thread(void *arg)
 	}
 	err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
 	if (err < 0) {
-		//print_error(is->filename, err);
+		char errmsg[1024];
+		av_strerror(err, errmsg, 1024);
+		My_log(NULL, AV_LOG_ERROR, "ffmpeg error msg:%s", errmsg);
 		is->errmsg = "Could not open input file.";
 		is->errcode = -1;
 		ret = -1;
@@ -2774,7 +2942,10 @@ static int read_thread(void *arg)
 				if (is->video_stream >= 0)
 					packet_queue_put_nullpacket(&is->videoq, is->video_stream);
 				if (is->audio_stream >= 0)
+				{
 					packet_queue_put_nullpacket(&is->audioq, is->audio_stream);
+					is->audioq.eof = 1;
+				}
 				if (is->subtitle_stream >= 0)
 					packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream);
 				is->eof = 1;
@@ -2790,6 +2961,7 @@ static int read_thread(void *arg)
 		}
 		else {
 			is->eof = 0;
+			is->audioq.eof = 0;
 		}
 		/* check if packet is in play range specified by user, then queue, otherwise discard */
 		stream_start_time = ic->streams[pkt->stream_index]->start_time;
@@ -3076,7 +3248,6 @@ void initFF()
 #endif
 	av_register_all();
 	avformat_network_init();
-
 	//下面的代码也许和单个视频的播放相关
 	if (av_lockmgr_register(lockmgr)) {
 		My_log(NULL, AV_LOG_FATAL, "Could not initialize lock manager!\n");

@@ -424,6 +424,7 @@ namespace ff{
 					stream = current_audio.impl.GetDeviceBuf(device);
 					if (stream == NULL) {
 						stream = device->fake_stream;
+						return -1;
 					}
 				}
 

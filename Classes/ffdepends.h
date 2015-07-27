@@ -97,6 +97,7 @@ namespace ff{
 		int size;
 		int abort_request;
 		int serial;
+		int eof;
 		mutex_t *mutex;
 		cond_t *cond;
 	};
@@ -149,6 +150,7 @@ namespace ff{
 		int max_size;
 		int keep_last;
 		int rindex_shown;
+		int eof;
 		mutex_t *mutex;
 		cond_t *cond;
 		PacketQueue *pktq;

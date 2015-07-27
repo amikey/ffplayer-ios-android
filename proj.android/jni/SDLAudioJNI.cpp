@@ -6,7 +6,7 @@ using namespace cocos2d;
 
 namespace ff{
 	
-	#define  CLASS_NAME "org/cocos2dx/cpp_empty_test/AppActivity"
+	#define  CLASS_NAME "org/cocos2dx/cpp/AppActivity"
 	static JavaVM* mJavaVM;
 
 	/* Main activity */
@@ -28,6 +28,7 @@ namespace ff{
 	static JniMethodInfo jim_audioWriteShortBuffer;
 	static JniMethodInfo jim_audioWriteByteBuffer;
 	static JniMethodInfo jim_audioQuit;
+	static JniMethodInfo jim_testJni;
 	
 	int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames)
 	{
@@ -38,9 +39,9 @@ namespace ff{
 		__android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 	
 		if( !(JniHelper::getStaticMethodInfo(jim_audioInit,CLASS_NAME,"audioInit", "(IZZI)I") &&
-			JniHelper::getStaticMethodInfo(jim_audioWriteShortBuffer,CLASS_NAME,"audioWriteShortBuffer", "([S)V") &&
-			JniHelper::getStaticMethodInfo(jim_audioWriteByteBuffer,CLASS_NAME,"audioWriteByteBuffer", "([B)V") &&
-			JniHelper::getStaticMethodInfo(jim_audioQuit,CLASS_NAME,"audioQuit", "()V")))
+//			JniHelper::getStaticMethodInfo(jim_audioWriteShortBuffer,CLASS_NAME,"audioWriteShortBuffer", "([S)V") &&
+//			JniHelper::getStaticMethodInfo(jim_audioWriteByteBuffer,CLASS_NAME,"audioWriteByteBuffer", "([B)V") &&
+			JniHelper::getStaticMethodInfo(jim_audioQuit,CLASS_NAME,"audioQuit", "()V") ))
 		{
 			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on JniHelper::getStaticMethodInfo!");
 			return 0;
@@ -87,58 +88,6 @@ namespace ff{
 			__android_log_print(ANDROID_LOG_WARN, "SDL", "OpenAudioDevice done !");
 		else
 			__android_log_print(ANDROID_LOG_WARN, "SDL", "OpenAudioDevice audioBuffer failed !");
-		/*
-		JNIEnv *env = Android_JNI_GetEnv();
-
-		if (!env) {
-			LOGE("callback_handler: failed to attach current thread");
-		}
-		Android_JNI_SetupThread();
-
-		__android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
-		audioBuffer16Bit = is16Bit;
-		audioBufferStereo = channelCount > 1;
-
-		if ((*env)->CallStaticIntMethod(env, mActivityClass, midAudioInit, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
-			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioTrack initialization!");
-			return 0;
-		}
-		*/
-		/* Allocating the audio buffer from the Java side and passing it as the return value for audioInit no longer works on
-		 * Android >= 4.2 due to a "stale global reference" error. So now we allocate this buffer directly from this side. */
-		/*
-		if (is16Bit) {
-			jshortArray audioBufferLocal = (*env)->NewShortArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
-			if (audioBufferLocal) {
-				audioBuffer = (*env)->NewGlobalRef(env, audioBufferLocal);
-				(*env)->DeleteLocalRef(env, audioBufferLocal);
-			}
-		}
-		else {
-			jbyteArray audioBufferLocal = (*env)->NewByteArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
-			if (audioBufferLocal) {
-				audioBuffer = (*env)->NewGlobalRef(env, audioBufferLocal);
-				(*env)->DeleteLocalRef(env, audioBufferLocal);
-			}
-		}
-
-		if (audioBuffer == NULL) {
-			__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: could not allocate an audio buffer!");
-			return 0;
-		}
-
-		jboolean isCopy = JNI_FALSE;
-		if (audioBuffer16Bit) {
-			audioBufferPinned = (*env)->GetShortArrayElements(env, (jshortArray)audioBuffer, &isCopy);
-			audioBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
-		} else {
-			audioBufferPinned = (*env)->GetByteArrayElements(env, (jbyteArray)audioBuffer, &isCopy);
-			audioBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)audioBuffer);
-		}
-		if (audioBufferStereo) {
-			audioBufferFrames /= 2;
-		}
-		*/
 		return audioBufferFrames;
 	}
 
@@ -152,25 +101,21 @@ namespace ff{
 		JNIEnv *env = JniHelper::getEnv();
 		if(audioBuffer16Bit){
 			env->ReleaseShortArrayElements((jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
-			env->CallStaticVoidMethod(jim_audioWriteShortBuffer.classID,jim_audioWriteShortBuffer.methodID, (jshortArray)audioBuffer);
+			if(JniHelper::getStaticMethodInfo(jim_audioWriteShortBuffer,CLASS_NAME,"audioWriteShortBuffer", "([S)V"))
+			{
+				env->CallStaticVoidMethod(jim_audioWriteShortBuffer.classID,jim_audioWriteShortBuffer.methodID, (jshortArray)audioBuffer);
+				env->DeleteLocalRef(jim_audioWriteShortBuffer.classID);
+			}
 		}
 		else
 		{
 			env->ReleaseByteArrayElements((jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
-			env->CallStaticVoidMethod(jim_audioWriteByteBuffer.classID,jim_audioWriteByteBuffer.methodID, (jbyteArray)audioBuffer);
+			if(JniHelper::getStaticMethodInfo(jim_audioWriteByteBuffer,CLASS_NAME,"audioWriteByteBuffer", "([B)V"))
+			{			
+				env->CallStaticVoidMethod(jim_audioWriteByteBuffer.classID,jim_audioWriteByteBuffer.methodID, (jbyteArray)audioBuffer);
+				env->DeleteLocalRef(jim_audioWriteByteBuffer.classID);
+			}
 		}	
-		/*
-		JNIEnv *mAudioEnv = Android_JNI_GetEnv();
-
-		if (audioBuffer16Bit) {
-			(*mAudioEnv)->ReleaseShortArrayElements(mAudioEnv, (jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
-			(*mAudioEnv)->CallStaticVoidMethod(mAudioEnv, mActivityClass, midAudioWriteShortBuffer, (jshortArray)audioBuffer);
-		} else {
-			(*mAudioEnv)->ReleaseByteArrayElements(mAudioEnv, (jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
-			(*mAudioEnv)->CallStaticVoidMethod(mAudioEnv, mActivityClass, midAudioWriteByteBuffer, (jbyteArray)audioBuffer);
-		}
-		*/
-		/* JNI_COMMIT means the changes are committed to the VM but the buffer remains pinned */
 	}
 
 	void Android_JNI_CloseAudioDevice()
@@ -181,8 +126,8 @@ namespace ff{
 		env->CallStaticVoidMethod(jim_audioQuit.classID,jim_audioQuit.methodID);
 		
 		env->DeleteLocalRef(jim_audioInit.classID);
-		env->DeleteLocalRef(jim_audioWriteShortBuffer.classID);
-		env->DeleteLocalRef(jim_audioWriteByteBuffer.classID);
+//		env->DeleteLocalRef(jim_audioWriteShortBuffer.classID);
+//		env->DeleteLocalRef(jim_audioWriteByteBuffer.classID);
 		env->DeleteLocalRef(jim_audioQuit.classID);
 		
 		if( audioBuffer )
@@ -192,17 +137,6 @@ namespace ff{
 			audioBufferPinned = nullptr;
 		}
 		__android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: close audio device done!");
-		/*
-		JNIEnv *env = Android_JNI_GetEnv();
-
-		(*env)->CallStaticVoidMethod(env, mActivityClass, midAudioQuit);
-
-		if (audioBuffer) {
-			(*env)->DeleteGlobalRef(env, audioBuffer);
-			audioBuffer = NULL;
-			audioBufferPinned = NULL;
-		}
-		*/
 	}
 	
 }

@@ -117,8 +117,11 @@ namespace ff
 			static Uint8 *
 				WINMM_GetDeviceBuf(AudioDevice *_this)
 			{
-					return (Uint8 *)(_this->hidden->
+					if (_this && _this->hidden && _this->hidden->wavebuf)
+						return (Uint8 *)(_this->hidden->
 						wavebuf[_this->hidden->next_buffer].lpData);
+					else
+						return NULL;
 				}
 
 			static void
