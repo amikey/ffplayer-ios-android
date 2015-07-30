@@ -37,7 +37,7 @@ namespace ff
 			函数成功返回一个RGB raw指针，格式为Texture2D::PixelFormat::RGB888
 			因此你可以直接用来作为材质使用
 		*/
-		void *refresh() const;
+		void *refresh();
 
 		/*
 			网络预加载进度
@@ -50,6 +50,7 @@ namespace ff
 		int preload_packet_nb() const;
 	private:
 		void* _ctx;
+		bool _first;
 	};
 }
 #endif

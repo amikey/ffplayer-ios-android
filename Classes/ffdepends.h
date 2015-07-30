@@ -287,6 +287,7 @@ namespace ff{
 		Ò»¸öRGB»º³åÇø
 		*/
 		Surface *pscreen;
+		Surface *pscreen2;
 		int nMIN_FRAMES;
 		const char *errmsg;
 		int errcode;

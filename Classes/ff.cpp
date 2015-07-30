@@ -166,9 +166,9 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 	w = FFMIN(16383, w);
 
 	//SDL_SetVideoMode(w, h, 0, HWSURFACE | ASYNCBLIT | HWACCEL);
-	if (!is->pscreen)
-		is->pscreen = (Surface*)CreateRGBSurface(SWSURFACE,w, h,24,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
-	if (!is->pscreen) {
+	if (!is->pscreen2)
+		is->pscreen2 = (Surface*)CreateRGBSurface(SWSURFACE,w, h,24,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
+	if (!is->pscreen2) {
 		My_log(NULL, AV_LOG_FATAL, "SDL: could not set video mode - exiting\n");
 		do_exit(is);
 	}
@@ -178,8 +178,8 @@ static int video_open(VideoState *is, int force_set_video_mode, Frame *vp)
 	
 	WM_SetCaption(window_title, window_title);
 
-	is->width = is->pscreen->w;
-	is->height = is->pscreen->h;
+	is->width = is->pscreen2->w;
+	is->height = is->pscreen2->h;
 
 	return 0;
 }
@@ -563,13 +563,14 @@ static void video_image_display(VideoState *is)
 		calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
 
 		DisplayYUVOverlay(vp->bmp, &rect);
+		is->pscreen = is->pscreen2; 
 	}
 }
 
 /* display the current picture, if any */
 static void video_display(VideoState *is)
 {
-	if (!is->pscreen)
+	if (!is->pscreen2)
 		video_open(is, 0, NULL);
 
 	video_image_display(is);
@@ -793,6 +794,11 @@ void stream_close(VideoState *is)
 #if !CONFIG_AVFILTER
 	sws_freeContext(is->img_convert_ctx);
 #endif
+	if (is->pscreen2){
+		FreeSurface(is->pscreen2);
+		is->pscreen2 = NULL;
+		is->pscreen = NULL;
+	}
 	av_free(is);
 }
 
@@ -1129,7 +1135,11 @@ static void sdl_audio_callback(void *opaque, Uint8 *stream, int len)
 			if (audio_size < 0) {
 				/* if error, just output silence */
 				is->audio_buf = is->silence_buf;
-				is->audio_buf_size = sizeof(is->silence_buf) / is->audio_tgt.frame_size * is->audio_tgt.frame_size;
+				if( is->audio_tgt.frame_size != 0 )
+					is->audio_buf_size = sizeof(is->silence_buf) / is->audio_tgt.frame_size * is->audio_tgt.frame_size;
+				else
+					//FIXME: is->audio_tgt.frame_size = 0?
+					is->audio_buf_size = 0;
 			}
 			else {
 				if (is->show_mode != SHOW_MODE_VIDEO)
@@ -1671,10 +1681,10 @@ static void alloc_picture(VideoState *is)
 	free_picture(vp);
 
 	video_open(is, 0, vp);
-
+	
 	vp->bmp = CreateYUVOverlay(vp->width, vp->height,
 		YV12_OVERLAY,
-		is->pscreen);
+		is->pscreen2);
 	bufferdiff = vp->bmp ? FFMAX(vp->bmp->pixels[0], vp->bmp->pixels[1]) - FFMIN(vp->bmp->pixels[0], vp->bmp->pixels[1]) : 0;
 	if (!vp->bmp || vp->bmp->pitches[0] < vp->width || bufferdiff < (int64_t)vp->height * vp->bmp->pitches[0]) {
 		/* SDL allocates a buffer smaller than requested if the video
@@ -3029,6 +3039,8 @@ VideoState *stream_open(const char *filename, AVInputFormat *iformat)
 	is->xleft = 0;
 	is->nMIN_FRAMES = MIN_FRAMES;
 	is->errcode = 0;
+	is->pscreen = nullptr;
+	is->pscreen2 = nullptr;
 	is->errmsg = nullptr;
 	do 
 	{
