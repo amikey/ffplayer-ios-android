@@ -35,8 +35,10 @@ namespace ff
 				t = length();
 			if (t < 0)
 				t = 0;
-			int64_t ts = t * 1000000LL;
-			stream_seek(_vs, ts, 0, 0);
+			double pos = cur();
+			int64_t ts = t * AV_TIME_BASE;
+			int64_t ref = (int64_t)((t-pos) *AV_TIME_BASE);
+			stream_seek(_vs,ts, ref, 0);
 		}
 	}
 
@@ -178,7 +180,7 @@ namespace ff
 		VideoState* _vs = (VideoState*)_ctx;
 		if (_vs && _vs->pscreen2)
 		{
-			double r = 1 / 30;
+			double r = 1.0 / 30.0;
 			if (!is_stream_pause((VideoState*)_ctx))
 				video_refresh(_vs, &r);
 			if (_vs->pscreen){

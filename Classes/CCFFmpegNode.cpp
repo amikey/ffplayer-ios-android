@@ -58,7 +58,8 @@ CCFFmpegNode::~CCFFmpegNode()
 
 static int pidx = 0;
 static const char * movies[] = { 
-	"g:\\1.mpg",
+	//"g:\\1.mpg",
+	//"g:\\1.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/07766ef6c835484fa8eaf606353f0cee.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/92dc0b8689d64c1682d3d3f2501b3e8d.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/729c4a6a87c541ff8e9eff183ce98658.m3u8",
@@ -133,7 +134,7 @@ void CCFFmpegNode::updateTexture(float dt)
 			}
 			//设置可以提前下载1500个包
 			//_video.set_preload_nb( 1500 );
-			//_video.seek(200);
+			_video.seek(200);
 		}
 	}
 
@@ -181,16 +182,17 @@ void CCFFmpegNode::onPlay(Ref *pSender, ui::Widget::TouchEventType type)
 {
 	if (type == ui::Widget::TouchEventType::ENDED)
 	{
-		if (_video.isPlaying())
+	/*	if (_video.isPlaying())
 		{
 			_video.seek(100);
 			_video.pause();
 		}
 		else
 		{
-			_video.seek(0);
-			_video.play();
-		}
+		*/
+		_video.seek(_video.cur()-10);
+			//_video.play();
+		//}
 		buttonState(!_video.isPlaying());
 	}
 }
