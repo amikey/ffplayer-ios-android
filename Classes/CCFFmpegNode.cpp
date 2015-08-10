@@ -60,6 +60,8 @@ static int pidx = 0;
 static const char * movies[] = { 
 	//"g:\\1.mpg",
 	//"g:\\1.m3u8",
+	"g:\\2.mp4",
+	"http://7pn4y1.com2.z0.glb.qiniucdn.com/272972c2ab7a5b01186d759108517cea21a69ef0.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/07766ef6c835484fa8eaf606353f0cee.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/92dc0b8689d64c1682d3d3f2501b3e8d.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/729c4a6a87c541ff8e9eff183ce98658.m3u8",
@@ -77,11 +79,15 @@ bool CCFFmpegNode::initWithURL(const std::string& url)
 void CCFFmpegNode::updateTexture(float dt)
 {
 
-	void *data = _video.refresh();
+	void *data;
+
+	data = _video.refresh();
 	if (data )
 	{
-		if (_texture && _width == _video.width() && _height == _video.height() )
+		if (_texture && _width == _video.width() && _height == _video.height()){
+			_video.set_preload_time(10);
 			_texture->updateWithData(data, 0, 0, _width, _height);
+		}
 		else
 		{
 			_texture = new Texture2D();
@@ -112,12 +118,25 @@ void CCFFmpegNode::updateTexture(float dt)
 			if (!_play)
 			{
 				_play = ui::Button::create();
-				buttonState(!_video.isPlaying());
+				buttonState(_play,!_video.isPlaying());
 				_play->setAnchorPoint(Vec2(0, 0));
 				_play->setPosition(Vec2(100,100));
 				_play->addTouchEventListener(CC_CALLBACK_2(CCFFmpegNode::onPlay,this));
 				addChild(_play,99);
 				//_view->setPosition(Vec2(0, 24));
+				_next = ui::Button::create();
+				buttonState(_next, !_video.isPlaying());
+				_next->setAnchorPoint(Vec2(0, 0));
+				_next->setPosition(Vec2(130, 100));
+				_next->addTouchEventListener(CC_CALLBACK_2(CCFFmpegNode::onNext, this));
+				addChild(_next, 99);
+
+				_prev = ui::Button::create();
+				buttonState(_prev, !_video.isPlaying());
+				_prev->setAnchorPoint(Vec2(0, 0));
+				_prev->setPosition(Vec2(100-30, 100));
+				_prev->addTouchEventListener(CC_CALLBACK_2(CCFFmpegNode::onPrev, this));
+				addChild(_prev, 99);
 			}
 			//加入一个进度条
 			if (!_bar)
@@ -134,7 +153,7 @@ void CCFFmpegNode::updateTexture(float dt)
 			}
 			//设置可以提前下载1500个包
 			//_video.set_preload_nb( 1500 );
-			_video.seek(200);
+			//_video.seek(200);
 		}
 	}
 
@@ -144,14 +163,13 @@ void CCFFmpegNode::updateTexture(float dt)
 			_bar->setPercent(100 * _video.cur() / _video.length());
 	}
 	//打印状态
-	/*
-	CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isv %s,isa %s ,preload %d)", _video.cur(), _video.length(),
+	CCLog("pos : %f s (total %f s,isplaying %s, isEnd %s,isSeeking %s,isPause %s ,preload %d,preload_time %.2f)", _video.cur(), _video.length(),
 		_video.isPlaying() ? "true" : "false",
 		_video.isEnd() ? "true" : "false",
-		_video.hasVideo() ? "true" : "false",
-		_video.hasAudio() ? "true" : "false",
-		_video.preload_packet_nb());
-	*/
+		_video.isSeeking() ? "true" : "false",
+		_video.isPause() ? "true" : "false",
+		_video.preload_packet_nb(),
+		_video.preload_time());
 
 	//结束播放下一首
 	if (_video.isEnd() || _video.isError())
@@ -182,28 +200,42 @@ void CCFFmpegNode::onPlay(Ref *pSender, ui::Widget::TouchEventType type)
 {
 	if (type == ui::Widget::TouchEventType::ENDED)
 	{
-	/*	if (_video.isPlaying())
+		if (_video.isPlaying())
 		{
-			_video.seek(100);
 			_video.pause();
 		}
 		else
 		{
-		*/
-		_video.seek(_video.cur()-10);
-			//_video.play();
-		//}
-		buttonState(!_video.isPlaying());
+			_video.play();
+		}
 	}
 }
 
-void CCFFmpegNode::buttonState(bool b)
+void CCFFmpegNode::onNext(Ref *pSender, ui::Widget::TouchEventType type)
 {
-	if (_play)
+	if (type == ui::Widget::TouchEventType::ENDED)
+	{
+		double pos = _video.cur() + 10;
+		_video.seek(pos);
+	}
+}
+
+void CCFFmpegNode::onPrev(Ref *pSender, ui::Widget::TouchEventType type)
+{
+	if (type == ui::Widget::TouchEventType::ENDED)
+	{
+		double pos = _video.cur() - 10;
+		_video.seek(pos);
+	}
+}
+
+void CCFFmpegNode::buttonState(ui::Button * but,bool b)
+{
+	if (but)
 	{
 		if ( b )
-			_play->loadTextures("playbuttonb.png","playbuttonb.png");
+			but->loadTextures("playbuttonb.png","playbuttonb.png");
 		else
-			_play->loadTextures("pausebutton.png", "pausebutton.png");
+			but->loadTextures("pausebutton.png", "pausebutton.png");
 	}
 }

@@ -58,6 +58,20 @@ SwsContext *sws_opts;
 AVDictionary *swr_opts;
 AVDictionary *format_opts, *codec_opts, *resample_opts;
 
+/*
+int CCLog(const char *pszFmt, ...)
+{
+	char szLine[1024 * 10];
+	va_list	va;
+	va_start(va, pszFmt);
+	vsprintf(szLine, pszFmt, va);
+	va_end(va);
+
+	cocos2d::CCLog(szLine);
+	return 0;
+}
+*/
+
 void static My_log(void* p,int inval,const char* fmt,...)
 {
 	char buf[1024];
@@ -563,7 +577,13 @@ static void video_image_display(VideoState *is)
 		calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
 
 		DisplayYUVOverlay(vp->bmp, &rect);
-		is->pscreen = is->pscreen2; 
+		double pos = get_master_clock(is);
+		if (!isnan(pos))
+			is->current = pos;
+		if (!is->pscreen){
+			is->pscreen = is->pscreen2;
+			is->step = 0;
+		}
 	}
 }
 
@@ -1245,7 +1265,8 @@ static void sdl_mx_audio_callback(void *pd, Uint8 *stream, int len)
 		{
 			pac->_callback(pac->_is, mixData, len);
 			//SDL_MixAudioFormat(stream, mixData, format,len, 128);
-			MixAudioFormat((Sint16*)stream, (Sint16*)mixData, format, len / 2, 128);
+			if (!(pac->_is->step || pac->_is->seek_req))
+				MixAudioFormat((Sint16*)stream, (Sint16*)mixData, format, len / 2, 128);
 		}
 	}
 	delete [] mixData;
@@ -1621,8 +1642,10 @@ void video_refresh(VideoState *is, double *remaining_time)
 
 			frame_queue_next(&is->pictq);
 
-			if (is->step && !is->paused)
+			if (is->step && !is->paused){
 				stream_toggle_pause(is);
+				is->step = 0;
+			}
 		}
 	}
 	is->force_refresh = 0;
@@ -3041,6 +3064,8 @@ VideoState *stream_open(const char *filename, AVInputFormat *iformat)
 	is->errcode = 0;
 	is->pscreen = nullptr;
 	is->pscreen2 = nullptr;
+	is->current = 0;
+	is->step = 1;
 	is->errmsg = nullptr;
 	do 
 	{

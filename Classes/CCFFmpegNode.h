@@ -20,6 +20,8 @@ public:
 protected:
 	Sprite *_view;
 	ui::Button *_play;
+	ui::Button *_next;
+	ui::Button *_prev;
 	ui::LoadingBar *_bar;
 	Texture2D *_texture;
 	int _width;
@@ -27,8 +29,10 @@ protected:
 	ff::FFVideo _video;
 	void updateTexture(float dt);
 
-	void buttonState( bool b );
+	void buttonState(ui::Button *but, bool b);
 	void onPlay(Ref *pSender, ui::Widget::TouchEventType type);
+	void onNext(Ref *pSender, ui::Widget::TouchEventType type);
+	void onPrev(Ref *pSender, ui::Widget::TouchEventType type);
 };
 
 NS_CC_END

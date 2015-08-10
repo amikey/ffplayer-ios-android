@@ -288,6 +288,7 @@ namespace ff{
 		*/
 		Surface *pscreen;
 		Surface *pscreen2;
+		double current;
 		int nMIN_FRAMES;
 		const char *errmsg;
 		int errcode;
