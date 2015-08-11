@@ -256,14 +256,35 @@ namespace ff
 		return nullptr;
 	}
 
+	/*
+	 * 计算视频或音频流的平均包率（每秒多少个包）
+	 */
+	static double calc_avg_pocket_rate(AVStream *st)
+	{
+		if (st){
+			if (st->avg_frame_rate.den>0 && st->avg_frame_rate.num>0) 
+				return (double)st->avg_frame_rate.num / (double)st->avg_frame_rate.den;//如果已经有平均包率，直接返回
+
+			if (st->time_base.den > 0){
+				double tt = st->duration* (double)st->time_base.num / (double)st->time_base.den; //流总的时间
+				if ( tt > 0 )
+					return (double)st->nb_frames / tt;
+			}
+		}
+		return -1;
+	}
+
 	double FFVideo::preload_time()
 	{
 		VideoState* is = (VideoState*)_ctx;
 		if (is)
 		{
-			if (is->video_st &&is->video_st->avg_frame_rate.num!=0){
-				return is->videoq.nb_packets*(double)is->video_st->avg_frame_rate.den / (double)is->video_st->avg_frame_rate.num;
-			}
+			double apr = calc_avg_pocket_rate(is->video_st);
+			if (apr>0)
+				return is->videoq.nb_packets / apr;
+			apr = calc_avg_pocket_rate(is->audio_st);
+			if (apr > 0)
+				return is->audioq.nb_packets / apr;
 		}
 		return -1;
 	}
@@ -273,12 +294,18 @@ namespace ff
 		VideoState* is = (VideoState*)_ctx;
 		if (is && t>=0 )
 		{
-			if (is->video_st && is->video_st->avg_frame_rate.den != 0)
-			{
-				int nb = (int)( t * (double)is->video_st->avg_frame_rate.num / (double)is->video_st->avg_frame_rate.den );
-				set_preload_nb(nb);
+			double apr = calc_avg_pocket_rate(is->video_st);
+			if (apr > 0){
+				set_preload_nb((int)(apr*t));
 				return true;
 			}
+			apr = calc_avg_pocket_rate(is->audio_st);
+			if (apr > 0){
+				set_preload_nb((int)(apr*t));
+				return true;
+			}
+			//如果不能正确计算平均包率就恢复为默认设置
+			set_preload_nb(50);
 		}
 		return false;
 	}

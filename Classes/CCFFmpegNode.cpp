@@ -58,8 +58,9 @@ CCFFmpegNode::~CCFFmpegNode()
 
 static int pidx = 0;
 static const char * movies[] = { 
-	//"g:\\1.mpg",
+//	"g:\\1.mpg",
 	//"g:\\1.m3u8",
+	"g:\\Maps.mp3",
 	"g:\\2.mp4",
 	"http://7pn4y1.com2.z0.glb.qiniucdn.com/272972c2ab7a5b01186d759108517cea21a69ef0.m3u8",
 	"http://dl-lejiaolexue.qiniudn.com/07766ef6c835484fa8eaf606353f0cee.m3u8",
