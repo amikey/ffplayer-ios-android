@@ -579,7 +579,13 @@ static void video_image_display(VideoState *is)
 		DisplayYUVOverlay(vp->bmp, &rect);
 		double pos = get_master_clock(is);
 		if (!isnan(pos))
-			is->current = pos;
+		{
+			//部分mp3会有一个图像封面,这里确保这种情况下current<0
+			if (is->current == -1)
+				is->current = -0.001;
+			else
+				is->current = pos;
+		}
 		if (!is->pscreen){
 			is->pscreen = is->pscreen2;
 			is->step = 0;
@@ -3064,7 +3070,7 @@ VideoState *stream_open(const char *filename, AVInputFormat *iformat)
 	is->errcode = 0;
 	is->pscreen = nullptr;
 	is->pscreen2 = nullptr;
-	is->current = 0;
+	is->current = -1;
 	is->step = 1;
 	is->errmsg = nullptr;
 	do 
