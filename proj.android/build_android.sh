@@ -1,3 +1,4 @@
+export TMPDIR=G:/tmp
 NDK=C:/android-ndk-r9d
 PLATFORM=$NDK/platforms/android-9/arch-arm/
 PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.8/prebuilt/windows
